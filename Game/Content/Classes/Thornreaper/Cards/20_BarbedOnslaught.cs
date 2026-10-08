@@ -5,9 +5,9 @@ using Godot;
 public class BarbedOnslaught : ThornreaperLevelUpCardModel<BarbedOnslaught.CardTop, BarbedOnslaught.CardBottom>
 {
 	public override string Name => "Beacon of Hope";
-	public override int Level => 4;
+	public override int Level => 5;
 	public override int Initiative => 82;
-	protected override int AtlasIndex => 15 - 5;
+	protected override int AtlasIndex => 29 - 20;
 
 	public class CardTop : ThornreaperCardSide
 	{

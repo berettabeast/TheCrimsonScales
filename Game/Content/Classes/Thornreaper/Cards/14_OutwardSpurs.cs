@@ -5,9 +5,9 @@ using Godot;
 public class OutwardSpurs : ThornreaperCardModel<OutwardSpurs.CardTop, OutwardSpurs.CardBottom>
 {
 	public override string Name => "Prosperous Concord";
-	public override int Level => 1;
+	public override int Level => 2;
 	public override int Initiative => 43;
-	protected override int AtlasIndex => 13 - 13;
+	protected override int AtlasIndex => 29 - 14;
 
 	public class CardTop : ThornreaperCardSide
 	{

@@ -4,9 +4,9 @@ using Godot;
 public class BrightSkies : ThornreaperLevelUpCardModel<BrightSkies.CardTop, BrightSkies.CardBottom>
 {
 	public override string Name => "Divine Allegiance";
-	public override int Level => 2;
+	public override int Level => 3;
 	public override int Initiative => 63;
-	protected override int AtlasIndex => 15 - 1;
+	protected override int AtlasIndex => 29 - 16;
 
 	public class CardTop : ThornreaperCardSide
 	{

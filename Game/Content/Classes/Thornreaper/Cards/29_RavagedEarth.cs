@@ -6,7 +6,7 @@ public class RavagedEarth : ThornreaperLevelUpCardModel<RavagedEarth.CardTop, Ra
 	public override string Name => "Expansive Permanence";
 	public override int Level => 9;
 	public override int Initiative => 09;
-	protected override int AtlasIndex => 15 - 14;
+	protected override int AtlasIndex => 29 - 29;
 
 	public class CardTop : ThornreaperCardSide
 	{

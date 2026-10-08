@@ -13,6 +13,32 @@ public class CoverOfGreen : ThornreaperCardModel<CoverOfGreen.CardTop, CoverOfGr
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
+			new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
+				{
+					await AbilityCmd.GenericChoice(state.Performer,
+					[
+						ScenarioEvent<ScenarioEvents.GenericChoice.Parameters>.Subscription.ConsumeElement([CardElementConsumption.Consume(Element.Earth)],
+							applyFunction: async _ =>
+							{
+								state.SetPerformed();
+								await GDTask.CompletedTask;
+							},
+							effectInfoViewParameters: new TextEffectInfoView.Parameters($"Consume {Icons.Inline(Icons.GetElement(Element.Earth))}"),
+							effectType: EffectType.SelectableMandatory),
+						ScenarioEvents.GenericChoice.Subscription.New(
+							applyFunction: async _ =>
+							{
+								await GDTask.CompletedTask;
+							},
+							effectButtonParameters: new IconEffectButton.Parameters("res://Art/Icons/Elements/EarthEmpty.svg"),
+							effectInfoViewParameters: new TextEffectInfoView.Parameters("Skip action"),
+							effectType: EffectType.SelectableMandatory
+						)
+					], false, $"Consume {Icons.Inline(Icons.GetElement(Element.Earth))} to perform this action or skip");
+				})
+				.Build()),
+
 			new AbilityCardAbility(AttackAbility.Builder()
 				.WithDamage(3, new AttackSquare(this, new Vector2(0.234234f, 0.5345345f)))
 				.WithConditions(Conditions.Muddle)
@@ -25,7 +51,7 @@ public class CoverOfGreen : ThornreaperCardModel<CoverOfGreen.CardTop, CoverOfGr
 				new AOEHexMark(Vector2I.Zero.Add(Direction.East).Add(Direction.NorthEast), this, new Vector2(0.2f, 0.3f)),
 				new AOEHexMark(Vector2I.Zero.Add(Direction.SouthWest), this, new Vector2(0.5f, 0.4f))
 				)
-				.WithConditionalAbilityCheck(state => AbilityCmd.AskConsumeElement(state.Performer, Element.Earth))
+				.WithConditionalAbilityCheck(state => AbilityCmd.HasPerformedAbility(state, 0))
 				.Build()
 				)
 		];

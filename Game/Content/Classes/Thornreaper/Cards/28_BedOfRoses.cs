@@ -6,9 +6,9 @@ using Godot;
 public class BedOfRoses : ThornreaperLevelUpCardModel<BedOfRoses.CardTop, BedOfRoses.CardBottom>
 {
 	public override string Name => "Vengeful Veneration";
-	public override int Level => 8;
+	public override int Level => 9;
 	public override int Initiative => 78;
-	protected override int AtlasIndex => 15 - 13;
+	protected override int AtlasIndex => 29 - 28;
 
 	public class CardTop : ThornreaperCardSide
 	{
