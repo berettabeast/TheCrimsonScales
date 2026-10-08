@@ -8,7 +8,7 @@ public class TwistedThistle : ThornreaperLevelUpCardModel<TwistedThistle.CardTop
 	public override string Name => "Rooted Subjugation";
 	public override int Level => 4;
 	public override int Initiative => 30;
-	protected override int AtlasIndex => 15 - 4;
+	protected override int AtlasIndex => 29 - 19;
 
 	public class CardTop : ThornreaperCardSide
 	{

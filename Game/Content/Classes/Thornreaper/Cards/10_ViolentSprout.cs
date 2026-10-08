@@ -8,7 +8,7 @@ public class ViolentSprout : ThornreaperCardModel<ViolentSprout.CardTop, Violent
 	public override string Name => "Sacred Death";
 	public override int Level => 1;
 	public override int Initiative => 81;
-	protected override int AtlasIndex => 13 - 9;
+	protected override int AtlasIndex => 29 - 10;
 
 	public class CardTop : ThornreaperCardSide
 	{

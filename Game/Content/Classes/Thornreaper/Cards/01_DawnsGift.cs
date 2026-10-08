@@ -20,7 +20,7 @@ public class DawnsGift : ThornreaperCardModel<DawnsGift.CardTop, DawnsGift.CardB
 			new AbilityCardAbility(OtherAbility.Builder()
 			.WithPerformAbility(async abilityState =>
 				{
-					SelectedHex = await AbilityCmd.SelectHex(abilityState , list =>
+					Hex selectedHex = await AbilityCmd.SelectHex(abilityState , list =>
 						{
 							foreach (Hex possibleHex in RangeHelper.GetHexesInRange(abilityState.Performer.Hex, 1, true))
 							{
@@ -29,7 +29,10 @@ public class DawnsGift : ThornreaperCardModel<DawnsGift.CardTop, DawnsGift.CardB
 							}
 						},
 					false, "Create one 1-hex hazardous terrain in one adjacent featureless hex");
-					await CreateHazardousTerrain(SelectedHex);
+					if (selectedHex != null)
+					{
+						await CreateHazardousTerrain(selectedHex);
+					}
 
 					if (GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Waning or ElementState.Strong)
 					{
@@ -37,8 +40,11 @@ public class DawnsGift : ThornreaperCardModel<DawnsGift.CardTop, DawnsGift.CardB
 						async parameters =>
 						{
 								await AbilityCmd.InfuseElement(abilityState, Element.Earth);
-								if (parameters.AbilityState is LootAbility.State lootAbilityState)
-									lootAbilityState.SetPerformHex(SelectedHex);
+								if (parameters.AbilityState is LootAbility.State lootAbilityState && selectedHex != null)
+								{
+									lootAbilityState.SetPerformHex(selectedHex);
+								}
+								abilityState.SetPerformed();
 							
 						}, EffectType.Selectable,
 						effectButtonParameters: new IconEffectButton.Parameters("res://Art/OverlayTiles/Thorns 1h.png"),
@@ -48,15 +54,12 @@ public class DawnsGift : ThornreaperCardModel<DawnsGift.CardTop, DawnsGift.CardB
 						ScenarioEvents.AbilityEndedEvent.Subscribe(abilityState, this, parameters => parameters.Performer == abilityState.Performer,
 							async parameters =>
 							{
-								if (parameters.AbilityState is TargetedAbilityState)
+								if (parameters.AbilityState is LootAbility.State)
 								{
 									ScenarioEvents.AbilityStartedEvent.Unsubscribe(abilityState, this);
 								}
-								//abilityState.SetPerformed();
 							});
 					}
-					abilityState.SetPerformed();
-					// add abilityend listener
 				})
 				.Build()),
 

@@ -7,7 +7,7 @@ public class Superradiance : ThornreaperCardModel<Superradiance.CardTop, Superra
 	public override string Name => "Inspired Remedy";
 	public override int Level => 1;
 	public override int Initiative => 76;
-	protected override int AtlasIndex => 13 - 8;
+	protected override int AtlasIndex => 29 - 9;
 
 	public class CardTop : ThornreaperCardSide
 	{

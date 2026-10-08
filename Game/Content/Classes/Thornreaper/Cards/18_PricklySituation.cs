@@ -5,9 +5,9 @@ using Godot;
 public class PricklySituation : ThornreaperLevelUpCardModel<PricklySituation.CardTop, PricklySituation.CardBottom>
 {
 	public override string Name => "Vital Bond";
-	public override int Level => 3;
+	public override int Level => 4;
 	public override int Initiative => 48;
-	protected override int AtlasIndex => 15 - 3;
+	protected override int AtlasIndex => 29 - 18;
 
 	public class CardTop : ThornreaperCardSide
 	{

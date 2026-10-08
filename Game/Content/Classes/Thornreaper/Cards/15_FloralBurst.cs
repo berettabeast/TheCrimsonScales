@@ -7,7 +7,7 @@ public class FloralBurst : ThornreaperLevelUpCardModel<FloralBurst.CardTop, Flor
 	public override string Name => "Weakened Will";
 	public override int Level => 2;
 	public override int Initiative => 17;
-	protected override int AtlasIndex => 15 - 0;
+	protected override int AtlasIndex => 29 - 15;
 
 	public class CardTop : ThornreaperCardSide
 	{

@@ -300,6 +300,13 @@ public partial class GameController : SceneController<GameController>
 					OpenPartyInfoPopup();
 					break;
 			}
+			if (OS.IsDebugBuild())
+			{
+				if(inputEventKey.Keycode == Key.E)
+				{
+					Instance.ElementManager.SetState(Element.Earth, ElementState.Strong);
+				}
+			}
 		}
 	}
 

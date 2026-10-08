@@ -6,7 +6,7 @@ public class ShrewdOvergrowth : ThornreaperCardModel<ShrewdOvergrowth.CardTop, S
 	public override string Name => "Soul Strike";
 	public override int Level => 1;
 	public override int Initiative => 69;
-	protected override int AtlasIndex => 13 - 7;
+	protected override int AtlasIndex => 29 - 8;
 
 	public class CardTop : ThornreaperCardSide
 	{
