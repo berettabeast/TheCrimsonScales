@@ -6,7 +6,7 @@ public class Midsummer : ThornreaperCardModel<Midsummer.CardTop, Midsummer.CardB
 	public override string Name => "Inner Reflection";
 	public override int Level => 1;
 	public override int Initiative => 53;
-	protected override int AtlasIndex => 13 - 5;
+	protected override int AtlasIndex => 29 - 6;
 
 	public class CardTop : ThornreaperCardSide
 	{

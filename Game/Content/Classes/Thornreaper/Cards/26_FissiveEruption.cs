@@ -4,9 +4,9 @@ using Fractural.Tasks;
 public class FissiveEruption : ThornreaperLevelUpCardModel<FissiveEruption.CardTop, FissiveEruption.CardBottom>
 {
 	public override string Name => "Symphony of Oppression";
-	public override int Level => 7;
+	public override int Level => 8;
 	public override int Initiative => 86;
-	protected override int AtlasIndex => 15 - 11;
+	protected override int AtlasIndex => 29 - 26;
 
 	public class CardTop : ThornreaperCardSide
 	{

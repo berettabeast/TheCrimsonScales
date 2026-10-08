@@ -6,7 +6,7 @@ public class WelcomeToTheJungle : ThornreaperLevelUpCardModel<WelcomeToTheJungle
 	public override string Name => "Encouraged Conviction";
 	public override int Level => 3;
 	public override int Initiative => 14;
-	protected override int AtlasIndex => 15 - 2;
+	protected override int AtlasIndex => 29 - 17;
 
 	public class CardTop : ThornreaperCardSide
 	{

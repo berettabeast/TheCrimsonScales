@@ -7,7 +7,7 @@ public class ImpalingCommand : ThornreaperLevelUpCardModel<ImpalingCommand.CardT
 	public override string Name => "Righteous Atonement";
 	public override int Level => 8;
 	public override int Initiative => 20;
-	protected override int AtlasIndex => 15 - 12;
+	protected override int AtlasIndex => 29 - 27;
 
 	public class CardTop : ThornreaperCardSide
 	{

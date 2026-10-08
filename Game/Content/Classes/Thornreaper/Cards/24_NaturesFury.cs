@@ -6,9 +6,9 @@ using Godot;
 public class NaturesFury : ThornreaperLevelUpCardModel<NaturesFury.CardTop, NaturesFury.CardBottom>
 {
 	public override string Name => "Chains of Light";
-	public override int Level => 6;
+	public override int Level => 7;
 	public override int Initiative => 31;
-	protected override int AtlasIndex => 15 - 9;
+	protected override int AtlasIndex => 29 - 24;
 
 	public class CardTop : ThornreaperCardSide
 	{

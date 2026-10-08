@@ -8,7 +8,7 @@ public class SolarFlare : ThornreaperLevelUpCardModel<SolarFlare.CardTop, SolarF
 	public override string Name => "Unstoppable Force";
 	public override int Level => 6;
 	public override int Initiative => 21;
-	protected override int AtlasIndex => 15 - 8;
+	protected override int AtlasIndex => 29 - 23;
 
 	public class CardTop : ThornreaperCardSide
 	{

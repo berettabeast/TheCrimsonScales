@@ -7,7 +7,7 @@ public class BlackRose : ThornreaperCardModel<BlackRose.CardTop, BlackRose.CardB
 	public override string Name => "Oak's Embrace";
 	public override int Level => 1;
 	public override int Initiative => 84;
-	protected override int AtlasIndex => 13 - 10;
+	protected override int AtlasIndex => 29 - 11;
 
 	public class CardTop : ThornreaperCardSide
 	{
@@ -40,7 +40,7 @@ public class BlackRose : ThornreaperCardModel<BlackRose.CardTop, BlackRose.CardB
 				)
 				.WithUseSlots(
 					[
-						new UseSlot(new Vector2(0.38800013f, 0.344f)),
+						new UseSlot(new Vector2(0.38800029f, 0.344f)),
 						new UseSlot(new Vector2(0.58949935f, 0.344f), GainXP)
 					]
 				)
