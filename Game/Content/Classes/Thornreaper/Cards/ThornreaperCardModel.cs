@@ -28,4 +28,11 @@ public abstract class ThornreaperCardSide : AbilityCardSideModel<Thornreaper>
 		PackedScene scene = SceneLoader.LoadPackedScene("res://Content/OverlayTiles/HazardousTerrain/Thorns1H.tscn");
 		await AbilityCmd.CreateHazardousTerrain(hex, scene);
 	}
+
+	protected async GDTask CreateHazardousTerrain(Hex hex, Figure creator)
+	{
+		PackedScene scene = SceneLoader.LoadPackedScene("res://Content/OverlayTiles/HazardousTerrain/Thorns1H.tscn");
+		hex.Creator = creator;
+		await AbilityCmd.CreateHazardousTerrain(hex, scene);
+	}
 }

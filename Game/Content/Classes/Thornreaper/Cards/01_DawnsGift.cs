@@ -31,7 +31,7 @@ public class DawnsGift : ThornreaperCardModel<DawnsGift.CardTop, DawnsGift.CardB
 					false, "Create one 1-hex hazardous terrain in one adjacent featureless hex");
 					if (selectedHex != null)
 					{
-						await CreateHazardousTerrain(selectedHex);
+						await CreateHazardousTerrain(selectedHex, abilityState.Performer);
 					}
 
 					if (GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Waning or ElementState.Strong)

@@ -50,22 +50,55 @@ public class ExtendedBranch : ThornreaperCardModel<ExtendedBranch.CardTop, Exten
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
+			// new AbilityCardAbility(OtherActiveAbility.Builder()
+			// 	.WithOnActivate(async abilityState =>
+			// 		{
+			// 			ScenarioEvents.HazardousTerrainTriggeredEvent.Subscribe(abilityState, this,
+			// 				canApplyParameters => abilityState.Performer.AlliedWith(abilityState.Authority),
+			// 				applyParameters =>
+			// 				{
+			// 					applyParameters.SetAffectedByHazardousTerrain(false);
+			// 					return GDTask.CompletedTask;
+			// 				});
+			// 				await GDTask.CompletedTask;
+			// 		})
+			// 	.WithOnDeactivate(async abilityState =>
+			// 		{
+			// 			ScenarioEvents.HazardousTerrainTriggeredEvent.Unsubscribe(abilityState, this);
+			// 		})
+			// 	.Build())
 			new AbilityCardAbility(OtherActiveAbility.Builder()
 				.WithOnActivate(async abilityState =>
-					{
-						ScenarioEvents.HazardousTerrainTriggeredEvent.Subscribe(abilityState, this,
-							canApplyParameters => abilityState.Performer.AlliedWith(abilityState.Authority),
-							applyParameters =>
+				{
+					ScenarioCheckEvents.MoveCheckEvent.Subscribe(abilityState, this,
+						canApplyParameters =>
+							abilityState.Performer.AlliedWith(canApplyParameters.Performer) &&
+							(canApplyParameters.Hex.HasHexObjectOfType<HazardousTerrain>() && canApplyParameters.Hex.Creator == abilityState.Performer),
+						applyParameters =>
+						{
+							if(applyParameters.Hex.HasHexObjectOfType<HazardousTerrain>())
 							{
-								applyParameters.SetAffectedByHazardousTerrain(false);
-								return GDTask.CompletedTask;
-							});
-							await GDTask.CompletedTask;
-					})
+								applyParameters.SetAffectedByNegativeHex(false);
+							}
+						});
+
+					ScenarioEvents.HazardousTerrainTriggeredEvent.Subscribe(abilityState, this,
+						canApplyParameters => abilityState.Performer.AlliedWith(canApplyParameters.PotentialAbilityState?.Performer) && canApplyParameters.Hex.Creator == abilityState.Performer,
+						applyParameters =>
+						{
+							applyParameters.SetAffectedByHazardousTerrain(false);
+							return GDTask.CompletedTask;
+						});
+
+					await GDTask.CompletedTask;
+				})
 				.WithOnDeactivate(async abilityState =>
-					{
-						ScenarioEvents.HazardousTerrainTriggeredEvent.Unsubscribe(abilityState, this);
-					})
+				{
+					ScenarioCheckEvents.MoveCheckEvent.Unsubscribe(abilityState, this);
+					ScenarioEvents.HazardousTerrainTriggeredEvent.Unsubscribe(abilityState, this);
+
+					await GDTask.CompletedTask;
+				})
 				.Build())
 		];
 		public override bool Loss => true;
