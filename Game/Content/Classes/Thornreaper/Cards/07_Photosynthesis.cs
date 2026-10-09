@@ -5,9 +5,9 @@ using Godot;
 
 public class Photosynthesis : ThornreaperCardModel<Photosynthesis.CardTop, Photosynthesis.CardBottom>
 {
-	public override string Name => "Restoring Faith";
+	public override string Name => "Photosynthesis";
 	public override int Level => 1;
-	public override int Initiative => 64;
+	public override int Initiative => 35;
 	protected override int AtlasIndex => 29 - 7;
 
 	public class CardTop : ThornreaperCardSide
