@@ -13,7 +13,7 @@ public class CoverOfGreen : ThornreaperCardModel<CoverOfGreen.CardTop, CoverOfGr
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			ConsumeEarthOrSkip(),
+			ConsumeEarthOrSkipAction(),
 
 			new AbilityCardAbility(AttackAbility.Builder()
 				.WithDamage(3, new AttackSquare(this, new Vector2(0.234234f, 0.5345345f)))

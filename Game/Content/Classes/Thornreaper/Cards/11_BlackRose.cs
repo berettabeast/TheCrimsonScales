@@ -51,7 +51,7 @@ public class BlackRose : ThornreaperCardModel<BlackRose.CardTop, BlackRose.CardB
 				.Build()),
 
 			new AbilityCardAbility(PushAbility.Builder()
-				.WithPush(2)
+				.WithPush(2, new PushSquare(this, new Vector2(0.2f, 0.4f)))
 				.WithTarget(Target.Enemies | Target.TargetAll)
 				.Build())
 		];

@@ -34,7 +34,7 @@ public class EncasedInThorns : ThornreaperCardModel<EncasedInThorns.CardTop, Enc
 				.WithOnActivate(async state =>
 					{
 						ScenarioCheckEvents.ShieldCheckEvent.Subscribe(state, this, canApplyParameters => 
-							canApplyParameters.Figure == state.Performer && GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Strong or ElementState.Waning,
+							canApplyParameters.Figure == state.Performer && GetLightElementState() is ElementState.Strong or ElementState.Waning,
 							applyParameters =>
 								{
 									applyParameters.AdjustShield(1);

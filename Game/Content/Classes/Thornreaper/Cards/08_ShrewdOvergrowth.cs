@@ -56,12 +56,10 @@ public class ShrewdOvergrowth : ThornreaperCardModel<ShrewdOvergrowth.CardTop, S
 							}
 							else
 							{
-								//await abilityState.RemoveFromActive();
 								await AbilityCmd.DiscardOrLose(GetAbilityCard(abilityState));
 							}
 							await GDTask.CompletedTask;
 						});
-					//await GDTask.CompletedTask;
 				})
 				.WithOnDeactivate(async state =>
 				{
@@ -86,7 +84,7 @@ public class ShrewdOvergrowth : ThornreaperCardModel<ShrewdOvergrowth.CardTop, S
 			new AbilityCardAbility(OtherAbility.Builder()
 				.WithPerformAbility(async state =>
 					{
-						if (GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Strong or ElementState.Waning)
+						if (GetLightElementState() is ElementState.Strong or ElementState.Waning)
 						{
 							await AbilityCmd.InfuseElement(state, Element.Earth);
 						}

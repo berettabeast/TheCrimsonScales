@@ -36,7 +36,7 @@ public class DawnsGift : ThornreaperCardModel<DawnsGift.CardTop, DawnsGift.CardB
 						await CreateHazardousTerrain(selectedHex, abilityState.Performer);
 					}
 
-					if (GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Waning or ElementState.Strong)
+					if (GetLightElementState() is ElementState.Waning or ElementState.Strong)
 					{
 						ScenarioEvents.AbilityStartedEvent.Subscribe(abilityState, this, parameters => parameters.Performer == abilityState.Performer,
 						async parameters =>

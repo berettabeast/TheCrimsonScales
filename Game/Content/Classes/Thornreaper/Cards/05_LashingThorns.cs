@@ -16,7 +16,7 @@ public class LashingThorns : ThornreaperCardModel<LashingThorns.CardTop, Lashing
 			new AbilityCardAbility(OtherAbility.Builder()
 				.WithPerformAbility(async state =>
 					{
-						if (GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Waning or ElementState.Strong)
+						if (GetLightElementState() is ElementState.Waning or ElementState.Strong)
 						{
 							await AbilityCmd.InfuseElement(state, Element.Earth);
 						}
@@ -45,7 +45,7 @@ public class LashingThorns : ThornreaperCardModel<LashingThorns.CardTop, Lashing
 					))
 				.WithGetTargetingHintText(state =>
 					{
-						if (GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Strong or ElementState.Waning)
+						if (GetLightElementState() is ElementState.Strong or ElementState.Waning)
 						{
 							return $"{Icons.HintText(Icons.Attack)}3";
 						}

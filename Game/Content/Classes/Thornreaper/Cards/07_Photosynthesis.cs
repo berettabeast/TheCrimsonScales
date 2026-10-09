@@ -34,7 +34,7 @@ public class Photosynthesis : ThornreaperCardModel<Photosynthesis.CardTop, Photo
 					parameters => parameters.Figure == state.Performer,
 					async parameters =>
 					{
-						if (GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Strong or ElementState.Waning)
+						if (GetLightElementState() is ElementState.Strong or ElementState.Waning)
 						{
 							ActionState actionState = new ActionState(parameters.Figure,
 							[

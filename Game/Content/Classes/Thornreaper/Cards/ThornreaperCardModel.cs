@@ -36,7 +36,7 @@ public abstract class ThornreaperCardSide : AbilityCardSideModel<Thornreaper>
 		await AbilityCmd.CreateHazardousTerrain(hex, scene);
 	}
 
-	protected AbilityCardAbility ConsumeEarthOrSkip()
+	protected AbilityCardAbility ConsumeEarthOrSkipAction()
 	{
 		return new AbilityCardAbility(OtherAbility.Builder()
 				.WithPerformAbility(async state =>

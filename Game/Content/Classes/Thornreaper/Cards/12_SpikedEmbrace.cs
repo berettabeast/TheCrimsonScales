@@ -55,7 +55,7 @@ public class SpikedEmbrace : ThornreaperCardModel<SpikedEmbrace.CardTop, SpikedE
 			new AbilityCardAbility(OtherAbility.Builder()
 				.WithPerformAbility(async state =>
 				{
-					if (GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Waning)
+					if (GetLightElementState() is ElementState.Waning)
 					{
 						await AbilityCmd.InfuseElement(state, Element.Light);
 					}

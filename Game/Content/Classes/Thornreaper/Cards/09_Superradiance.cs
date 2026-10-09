@@ -31,7 +31,7 @@ public class Superradiance : ThornreaperCardModel<Superradiance.CardTop, Superra
 			new AbilityCardAbility(OtherAbility.Builder()
 				.WithPerformAbility(async state =>
 					{
-						if (GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Waning)
+						if (GetLightElementState() is ElementState.Waning)
 						{
 							await AbilityCmd.InfuseElement(state, Element.Light);
 						}

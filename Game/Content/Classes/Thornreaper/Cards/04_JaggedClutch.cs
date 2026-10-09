@@ -13,31 +13,7 @@ public class JaggedClutch : ThornreaperCardModel<JaggedClutch.CardTop, JaggedClu
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(OtherAbility.Builder()
-				.WithPerformAbility(async state =>
-				{
-					await AbilityCmd.GenericChoice(state.Performer,
-					[
-						ScenarioEvent<ScenarioEvents.GenericChoice.Parameters>.Subscription.ConsumeElement([CardElementConsumption.Consume(Element.Earth)],
-							applyFunction: async _ =>
-							{
-								state.SetPerformed();
-								await GDTask.CompletedTask;
-							},
-							effectInfoViewParameters: new TextEffectInfoView.Parameters($"Consume {Icons.Inline(Icons.GetElement(Element.Earth))}"),
-							effectType: EffectType.SelectableMandatory),
-						ScenarioEvents.GenericChoice.Subscription.New(
-							applyFunction: async _ =>
-							{
-								await GDTask.CompletedTask;
-							},
-							effectButtonParameters: new IconEffectButton.Parameters("res://Art/Icons/Elements/EarthEmpty.svg"),
-							effectInfoViewParameters: new TextEffectInfoView.Parameters("Skip action"),
-							effectType: EffectType.SelectableMandatory
-						)
-					], false, $"Consume {Icons.Inline(Icons.GetElement(Element.Earth))} to perform this action or skip");
-				})
-				.Build()),
+			ConsumeEarthOrSkipAction(),
 				
 			new AbilityCardAbility(AttackAbility.Builder()
 				.WithDamage(4, new AttackSquare(this, new Vector2(0.32887793f, 0.2931021f)))

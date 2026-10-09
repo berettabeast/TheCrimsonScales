@@ -14,31 +14,7 @@ public class ViolentSprout : ThornreaperCardModel<ViolentSprout.CardTop, Violent
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(OtherAbility.Builder()
-				.WithPerformAbility(async state =>
-				{
-					await AbilityCmd.GenericChoice(state.Performer,
-					[
-						ScenarioEvent<ScenarioEvents.GenericChoice.Parameters>.Subscription.ConsumeElement([CardElementConsumption.Consume(Element.Earth)],
-							applyFunction: async _ =>
-							{
-								state.SetPerformed();
-								await GDTask.CompletedTask;
-							},
-							effectInfoViewParameters: new TextEffectInfoView.Parameters($"Consume {Icons.Inline(Icons.GetElement(Element.Earth))}"),
-							effectType: EffectType.SelectableMandatory),
-						ScenarioEvents.GenericChoice.Subscription.New(
-							applyFunction: async _ =>
-							{
-								await GDTask.CompletedTask;
-							},
-							effectButtonParameters: new IconEffectButton.Parameters("res://Art/Icons/Elements/EarthEmpty.svg"),
-							effectInfoViewParameters: new TextEffectInfoView.Parameters("Skip action"),
-							effectType: EffectType.SelectableMandatory
-						)
-					], false, $"Consume {Icons.Inline(Icons.GetElement(Element.Earth))} to perform this action or skip");
-				})
-				.Build()),
+			ConsumeEarthOrSkipAction(),
 
 			new AbilityCardAbility(OtherAbility.Builder()
 				.WithPerformAbility(async abilityState =>
@@ -61,6 +37,7 @@ public class ViolentSprout : ThornreaperCardModel<ViolentSprout.CardTop, Violent
 						await CreateHazardousTerrain(selectedHex, abilityState.Performer);
 					}
 				})
+				.WithConditionalAbilityCheck(async state => await AbilityCmd.HasPerformedAbility(state, 0))
 				.Build()),
 
 				new AbilityCardAbility(AttackAbility.Builder()
@@ -84,7 +61,7 @@ public class ViolentSprout : ThornreaperCardModel<ViolentSprout.CardTop, Violent
 			new AbilityCardAbility(OtherAbility.Builder()
 				.WithPerformAbility(async state =>
 					{
-						if (GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Waning or ElementState.Strong)
+						if (GetLightElementState() is ElementState.Waning or ElementState.Strong)
 						{
 							await AbilityCmd.InfuseElement(state, Element.Earth);
 						}

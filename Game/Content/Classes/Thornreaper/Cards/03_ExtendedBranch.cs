@@ -26,7 +26,7 @@ public class ExtendedBranch : ThornreaperCardModel<ExtendedBranch.CardTop, Exten
 				new AOEHexMark(Vector2I.Zero.Add(Direction.NorthEast).Add(Direction.East).Add(Direction.East), this, new Vector2(0.5f, 0.4f)))
 				.WithAfterTargetConfirmedSubscription(
 					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
-						parameters => GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Strong or ElementState.Waning,
+						parameters => GetLightElementState() is ElementState.Strong or ElementState.Waning,
 						async parameters =>
 						{
 							await AbilityCmd.GainXP(parameters.Performer, 1);
@@ -36,7 +36,7 @@ public class ExtendedBranch : ThornreaperCardModel<ExtendedBranch.CardTop, Exten
 					)
 				).WithGetTargetingHintText(state => 
 					{			
-						if (GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Strong or ElementState.Waning)
+						if (GetLightElementState() is ElementState.Strong or ElementState.Waning)
 						{
 							return $"{Icons.HintText(Icons.Attack)}3";
 						}
