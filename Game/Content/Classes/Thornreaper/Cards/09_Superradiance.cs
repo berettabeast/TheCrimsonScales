@@ -4,89 +4,48 @@ using Godot;
 
 public class Superradiance : ThornreaperCardModel<Superradiance.CardTop, Superradiance.CardBottom>
 {
-	public override string Name => "Inspired Remedy";
+	public override string Name => "Superradiance";
 	public override int Level => 1;
-	public override int Initiative => 76;
+	public override int Initiative => 48;
 	protected override int AtlasIndex => 29 - 9;
 
 	public class CardTop : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(HealAbility.Builder()
-				.WithHealValue(3)
-				.WithRange(2, new RangeSquare(this, new Vector2(0.6105665f, 0.16249998f)))
-				.WithDuringHealSubscription(
-					ScenarioEvents.DuringHeal.Subscription.ConsumeElement(Element.Light,
-						applyFunction: async applyParameters =>
-						{
-							applyParameters.AbilityState.AbilityAdjustHealValue(1);
-							applyParameters.AbilityState.AbilityAdjustRange(1);
-
-							await GDTask.CompletedTask;
-						},
-						effectInfoViewParameters: new TextEffectInfoView.Parameters($"+1{Icons.Inline(Icons.Heal)}, +1{Icons.Inline(Icons.Range)}"))
-				)
-				.WithAfterTargetConfirmedSubscription(
-					ScenarioEvents.HealAfterTargetConfirmed.Subscription.New(
-						applyFunction: async applyParameters =>
-						{
-							bool underHalfHP = applyParameters.AbilityState.Target.Health <= applyParameters.AbilityState.Target.MaxHealth / 2;
-							applyParameters.AbilityState.SetCustomValue(this, "UnderHalfHP", underHalfHP);
-
-							await GDTask.CompletedTask;
-						})
-				)
-				.WithAfterHealPerformedSubscription(
-					ScenarioEvents.AfterHealPerformed.Subscription.New(
-						canApplyFunction: canApplyParameters =>
-							canApplyParameters.Performer.AlliedWith(canApplyParameters.AbilityState.Target) &&
-							canApplyParameters.AbilityState.Target is Character &&
-							canApplyParameters.AbilityState.GetCustomValue<bool>(this, "UnderHalfHP"),
-						applyFunction: async applyParameters =>
-						{
-						}
-					)
-				)
+			new AbilityCardAbility(PushAbility.Builder()
+				.WithPush(1)
+				.WithTarget(Target.Enemies | Target.TargetAll)
+				.WithRange(3)
+				.WithConditions(Conditions.Muddle)
 				.Build())
 		];
+		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Light)];
+		public override int XP => 1;
 	}
 
 	public class CardBottom : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(OtherActiveAbility.Builder()
-				.WithOnActivate(async state =>
-				{
-					ScenarioEvents.FigureTurnEndingEvent.Subscribe(state, this,
-						canApplyParameters => canApplyParameters.Figure == state.Performer,
-						async applyParameters =>
-						{
-							ActionState actionState = new ActionState(state.Performer, [
-								HealAbility.Builder()
-									.WithHealValue(1)
-									.WithRange(1)
-									.WithTarget(Target.Allies)
-									.Build()
-							]);
-							await actionState.Perform();
-						});
-
-					await GDTask.CompletedTask;
-				})
-				.WithOnDeactivate(async state =>
+			new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
 					{
-						ScenarioEvents.FigureTurnEndingEvent.Unsubscribe(state, this);
+						if (GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Waning)
+						{
+							await AbilityCmd.InfuseElement(state, Element.Light);
+						}
+					})
+				.Build()),
 
-						await GDTask.CompletedTask;
-					}
-				)
+			new AbilityCardAbility(MoveAbility.Builder()
+				.WithDistance(2, new MoveSquare(this, new Vector2(0.2f, 0.3f)))
+				.Build()),
+
+			new AbilityCardAbility(HealAbility.Builder()
+				.WithHealValue(1)
+				.WithRange(2, new RangeSquare(this, new Vector2(0.2f, 0.3f)))
 				.Build())
 		];
-
-		public override int XP => 2;
-		public override bool Persistent => true;
-		public override bool Loss => true;
 	}
 }

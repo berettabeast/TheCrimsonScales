@@ -25,7 +25,9 @@ public class DawnsGift : ThornreaperCardModel<DawnsGift.CardTop, DawnsGift.CardB
 							foreach (Hex possibleHex in RangeHelper.GetHexesInRange(abilityState.Performer.Hex, 1, true))
 							{
 								if (possibleHex != null && possibleHex.IsFeatureless())
-								list.Add(possibleHex);
+								{
+									list.Add(possibleHex);
+								}
 							}
 						},
 					false, "Create one 1-hex hazardous terrain in one adjacent featureless hex");
