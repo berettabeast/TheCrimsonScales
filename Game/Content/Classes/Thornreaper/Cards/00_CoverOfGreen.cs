@@ -73,6 +73,7 @@ public class CoverOfGreen : ThornreaperCardModel<CoverOfGreen.CardTop, CoverOfGr
 
 			new AbilityCardAbility(OtherAbility.Builder()
 			.WithPerformAbility(state => AbilityCmd.InfuseElement(state, Element.Earth))
+			.WithConditionalAbilityCheck(state => AbilityCmd.AskConsumeElement(state.Performer, Element.Earth))
 			.Build()
 			)
 		];

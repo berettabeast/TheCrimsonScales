@@ -50,23 +50,6 @@ public class ExtendedBranch : ThornreaperCardModel<ExtendedBranch.CardTop, Exten
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			// new AbilityCardAbility(OtherActiveAbility.Builder()
-			// 	.WithOnActivate(async abilityState =>
-			// 		{
-			// 			ScenarioEvents.HazardousTerrainTriggeredEvent.Subscribe(abilityState, this,
-			// 				canApplyParameters => abilityState.Performer.AlliedWith(abilityState.Authority),
-			// 				applyParameters =>
-			// 				{
-			// 					applyParameters.SetAffectedByHazardousTerrain(false);
-			// 					return GDTask.CompletedTask;
-			// 				});
-			// 				await GDTask.CompletedTask;
-			// 		})
-			// 	.WithOnDeactivate(async abilityState =>
-			// 		{
-			// 			ScenarioEvents.HazardousTerrainTriggeredEvent.Unsubscribe(abilityState, this);
-			// 		})
-			// 	.Build())
 			new AbilityCardAbility(OtherActiveAbility.Builder()
 				.WithOnActivate(async abilityState =>
 				{
