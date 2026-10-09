@@ -35,4 +35,34 @@ public abstract class ThornreaperCardSide : AbilityCardSideModel<Thornreaper>
 		hex.Creator = creator;
 		await AbilityCmd.CreateHazardousTerrain(hex, scene);
 	}
+
+	protected AbilityCardAbility ConsumeEarthOrSkip()
+	{
+		return new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
+				{
+					ConfirmPrompt.Answer answer = null;
+					if (GetEarthElementState() == ElementState.Inert)
+					{
+						answer = await PromptManager.Prompt(
+						new ConfirmPrompt(null, () => "Earth is inert. Skip ability?", true),
+						state.Authority);
+					}
+					else {
+						state.SetPerformed();
+						await AbilityCmd.TryConsumeElement(Element.Earth);
+					}
+				})
+				.Build());
+	}
+
+	protected ElementState GetEarthElementState()
+	{
+		return GameController.Instance.ElementManager.GetState(Element.Earth);
+	}
+
+	protected ElementState GetLightElementState()
+	{
+		return GameController.Instance.ElementManager.GetState(Element.Light);
+	}
 }

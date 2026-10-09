@@ -4,73 +4,60 @@ using Godot;
 
 public class BlackRose : ThornreaperCardModel<BlackRose.CardTop, BlackRose.CardBottom>
 {
-	public override string Name => "Oak's Embrace";
+	public override string Name => "Black Rose";
 	public override int Level => 1;
-	public override int Initiative => 84;
+	public override int Initiative => 12;
 	protected override int AtlasIndex => 29 - 11;
 
 	public class CardTop : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(UseSlotAbility.Builder()
-				.WithOnActivate(async state =>
-				{
-					ScenarioEvents.AttackAfterTargetConfirmedEvent.Subscribe(state, this,
-						canApplyParameters =>
-							state.Performer.AlliedWith(canApplyParameters.AbilityState.Target) &&
-							RangeHelper.Distance(state.Performer.Hex, canApplyParameters.AbilityState.Target.Hex) <= 3,
-						async applyParameters =>
-						{
-							await AbilityCmd.AddCondition(state, applyParameters.AbilityState.Target, Conditions.Ward);
-
-							await GDTask.DelayFastForwardable(0.3f);
-
-							await state.AdvanceUseSlot();
-						});
-
-					await GDTask.CompletedTask;
-				})
-				.WithOnDeactivate(async state =>
-					{
-						ScenarioEvents.AttackAfterTargetConfirmedEvent.Unsubscribe(state, this);
-
-						await GDTask.CompletedTask;
-					}
-				)
-				.WithUseSlots(
-					[
-						new UseSlot(new Vector2(0.38800029f, 0.344f)),
-						new UseSlot(new Vector2(0.58949935f, 0.344f), GainXP)
-					]
-				)
+			new AbilityCardAbility(AttackAbility.Builder()
+				.WithDamage(2, new AttackDiamond(this, new Vector2(0.3f, 0.3f)))
+				.WithTarget(Target.TargetAll)
+				.WithRange(2)
+				.WithRangeType(RangeType.Melee)
+				.WithConditions(Conditions.Immobilize)
 				.Build())
 		];
 
-		public override bool Persistent => true;
+		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Light)];
+		public override int XP => 2;
+		public override bool Loss => true;
 	}
 
 	public class CardBottom : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(MoveAbility.Builder().WithDistance(4).Build()),
-			new AbilityCardAbility(GrantAbility.Builder()
-				.WithGetAbilities(state =>
-					[
-						RetaliateAbility.Builder()
-							.WithRetaliateValue(1)
-							.WithConditionalAbilityCheck(state => AbilityCmd.AskConsumeElement(state.Performer, Element.Earth))
-							.WithOnAbilityEndedPerformed(async state =>
-							{
-								state.ActionState.SetOverrideRound();
+			new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
+				{
+					foreach (Figure figure in RangeHelper.GetFiguresInRange(state.Performer.Hex, 1, true, true))
+					{
+						if (figure.Hex.IsFeatureless())
+						{
+							await CreateHazardousTerrain(figure.Hex, state.Performer);
+						}
+					}
+					state.SetPerformed();
+				})
+				.Build()),
 
-								await GDTask.CompletedTask;
-							})
-							.Build()
-					]
-				)
+			new AbilityCardAbility(SufferDamageAbility.Builder()
+				.WithDamage(1)
+				.WithTarget(Target.Enemies | Target.TargetAll)
+				.Build()),
+
+			new AbilityCardAbility(PushAbility.Builder()
+				.WithPush(2)
+				.WithTarget(Target.Enemies | Target.TargetAll)
 				.Build())
 		];
+
+		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Dark)];
+		public override int XP => 2;
+		public override bool Loss => true;
 	}
 }

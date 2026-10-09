@@ -4,128 +4,64 @@ using Godot;
 
 public class SpikedEmbrace : ThornreaperCardModel<SpikedEmbrace.CardTop, SpikedEmbrace.CardBottom>
 {
-	public override string Name => "Soulful Salvation";
+	public override string Name => "Spiked Embrace";
 	public override int Level => 1;
-	public override int Initiative => 11;
+	public override int Initiative => 31;
 	protected override int AtlasIndex => 29 - 12;
 
 	public class CardTop : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(UseSlotAbility.Builder()
-				.WithOnActivate(async state =>
-				{
-					ScenarioEvents.FigureKilledEvent.Subscribe(state, this,
-						canApplyParameters => state.Authority.EnemiesWith(canApplyParameters.Figure),
-						async applyParameters =>
-						{
-							ActionState actionState = new ActionState(state.Performer,
-							[
-								HealAbility.Builder()
-									.WithHealValue(2)
-									.WithConditions(Conditions.Bless)
-									.WithTarget(Target.Allies | Target.TargetAll)
-									.WithCustomGetTargets((healAbilityState, list) =>
-									{
-										list.AddRange(RangeHelper.GetFiguresInRange(applyParameters.Figure.Hex, 1));
-									})
-									.Build()
-							]);
-							await actionState.Perform();
-
-							await state.AdvanceUseSlot();
-						});
-
-					await GDTask.CompletedTask;
-				})
-				.WithOnDeactivate(async state =>
-					{
-						ScenarioEvents.FigureKilledEvent.Unsubscribe(state, this);
-
-						await GDTask.CompletedTask;
-					}
-				)
-				.WithUseSlot(new UseSlot(new Vector2(0.48800015f, 0.34248334f)))
-				.Build())
+			new AbilityCardAbility(AttackAbility.Builder()
+				.WithDamage(2, new AttackSquare(this, new Vector2(0.2f, 0.3f)))
+				.WithRange(2, new RangeSquare(this, new Vector2(0.2f, 0.3f)))
+				.WithPull(1)
+				.WithPierce(2, new PierceSquare(this, new Vector2(0.2f, 0.3f)))
+				.Build()),
 		];
 
-		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Light)];
-		public override bool Persistent => true;
+		public override int XP => 1;
 	}
 
 	public class CardBottom : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(UseSlotAbility.Builder()
-				.WithOnActivate(async state =>
+			new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
 				{
-					ScenarioEvents.JustBeforeSufferDamageEvent.Subscribe(state, this,
-						parameters =>
-							parameters.Figure is Character &&
-							state.Performer.AlliedWith(parameters.Figure) &&
-							!parameters.Prevented &&
-							parameters.Figure.Health <= parameters.Damage,
-						async parameters =>
-						{
-							parameters.SetPrevented();
+					Hex hex = state.Performer.Hex;
 
-							ScenarioEvent<ScenarioEvents.GenericChoice.Parameters>.Subscription recoverCardSubscription =
-								ScenarioEvent<ScenarioEvents.GenericChoice.Parameters>.Subscription.New(
-									subscriptionParameters => true,
-									async subscriptionParameters =>
-									{
-										Character character = (Character)parameters.Figure;
-										AbilityCard abilityCard = await AbilityCmd.SelectAbilityCard(character, CardState.Lost,
-											hintText: "Select a lost card to recover");
-										if(abilityCard != null)
-										{
-											await AbilityCmd.ReturnToHand(abilityCard);
-										}
-									},
-									effectType: EffectType.SelectableMandatory,
-									effectButtonParameters: new IconEffectButton.Parameters(Icons.RecoverCard),
-									effectInfoViewParameters: new AbilityCardEffectInfoView.Parameters(GetAbilityCardSide(state))
-								);
-
-							ScenarioEvent<ScenarioEvents.GenericChoice.Parameters>.Subscription healSubscription =
-								ScenarioEvent<ScenarioEvents.GenericChoice.Parameters>.Subscription.New(
-									subscriptionParameters => true,
-									async subscriptionParameters =>
-									{
-										ActionState actionState = new ActionState(parameters.Figure,
-											[HealAbility.Builder().WithHealValue(5).WithTarget(Target.Self).Build()]);
-										await actionState.Perform();
-									},
-									effectType: EffectType.SelectableMandatory,
-									effectButtonParameters: new IconEffectButton.Parameters(Icons.Heal),
-									effectInfoViewParameters: new AbilityCardEffectInfoView.Parameters(GetAbilityCardSide(state))
-								);
-
-							await AbilityCmd.GenericChoice(state.Performer,
-								[recoverCardSubscription, healSubscription], hintText: "Recover a card or Heal 5?");
-
-							await state.AdvanceUseSlot();
-						}
-					);
-
-					await GDTask.CompletedTask;
-				})
-				.WithOnDeactivate(async state =>
+					if (hex.IsFeatureless())
 					{
-						ScenarioEvents.JustBeforeSufferDamageEvent.Unsubscribe(state, this);
-
-						await GDTask.CompletedTask;
+						List<Hex> selectedHexes =
+							await AbilityCmd.SelectHexes(state, list => list.Add(hex), 0, 1, true, "Create hazardous terrain?");
+						
+						foreach (Hex selectedHex in selectedHexes)
+						{
+							await CreateHazardousTerrain(hex, state.Performer);
+							state.SetPerformed();
+						}
 					}
-				)
-				.WithUseSlot(new UseSlot(new Vector2(0.48800015f, 0.89949995f)))
-				.Build())
-		];
+				})
+				.Build()),
 
-		public override int XP => 1;
-		public override bool Persistent => true;
-		public override bool Loss => true;
-		public override bool Unrecoverable => true;
+			new AbilityCardAbility(HealAbility.Builder()
+				.WithHealValue(3, new HealSquare(this, new Vector2(0.2f, 0.3f)))
+				.WithTarget(Target.Self)
+				.Build()),
+
+			new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
+				{
+					if (GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Waning)
+					{
+						await AbilityCmd.InfuseElement(state, Element.Light);
+					}
+					state.SetPerformed();
+				})
+				.Build()),
+		];
 	}
 }
