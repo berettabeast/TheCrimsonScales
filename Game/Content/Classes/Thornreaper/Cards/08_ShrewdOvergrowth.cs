@@ -12,7 +12,6 @@ public class ShrewdOvergrowth : ThornreaperCardModel<ShrewdOvergrowth.CardTop, S
 
 	public class CardTop : ThornreaperCardSide
 	{
-		bool roundPlayed = true;
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
 			new AbilityCardAbility(OtherAbility.Builder()
@@ -37,6 +36,8 @@ public class ShrewdOvergrowth : ThornreaperCardModel<ShrewdOvergrowth.CardTop, S
 			new AbilityCardAbility(OtherActiveAbility.Builder()
 				.WithOnActivate(async abilityState =>
 				{
+					bool roundPlayed = true;
+
 					ScenarioEvents.RoundEndedEvent.Subscribe(abilityState, this, parameters => true,
 						async parameters =>
 						{
@@ -45,25 +46,29 @@ public class ShrewdOvergrowth : ThornreaperCardModel<ShrewdOvergrowth.CardTop, S
 								await AbilityCmd.AddRetaliate(abilityState.Performer, this, 2, 1);
 								await AbilityCmd.AddShield(abilityState.Performer, this, 2);
 								ScenarioCheckEvents.PotentialTargetCheckEvent.Subscribe(abilityState, this,
-								parameters => parameters.PotentialTarget == abilityState.Performer,
-								parameters =>
+								targetParameters => targetParameters.PotentialTarget == abilityState.Performer,
+								targetParameters =>
 								{
-									parameters.AdjustTargetSortingInitiative(1);
+									targetParameters.AdjustTargetSortingInitiative(1 * 10000000 - abilityState.Performer.Initiative.SortingInitiative);
 								});
 								roundPlayed = false;
+								await GDTask.CompletedTask;
 							}
 							else
 							{
-								await abilityState.RemoveFromActive();
+								//await abilityState.RemoveFromActive();
+								await AbilityCmd.DiscardOrLose(GetAbilityCard(abilityState));
 							}
 							await GDTask.CompletedTask;
 						});
-					await GDTask.CompletedTask;
+					//await GDTask.CompletedTask;
 				})
 				.WithOnDeactivate(async state =>
 				{
 					ScenarioEvents.RoundEndedEvent.Unsubscribe(state, this);
 					ScenarioCheckEvents.PotentialTargetCheckEvent.Unsubscribe(state, this);
+					AbilityCmd.RemoveRetaliate(state.Performer, this);
+					AbilityCmd.RemoveShield(state.Performer, this);
 					await GDTask.CompletedTask;
 				})
 				.Build())

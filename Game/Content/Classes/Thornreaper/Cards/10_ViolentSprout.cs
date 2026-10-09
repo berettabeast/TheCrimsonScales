@@ -40,30 +40,38 @@ public class ViolentSprout : ThornreaperCardModel<ViolentSprout.CardTop, Violent
 				})
 				.Build()),
 
+			new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async abilityState =>
+				{
+					Hex selectedHex = await AbilityCmd.SelectHex(abilityState , list =>
+						{
+							foreach (Hex possibleHex in RangeHelper.GetHexesInRange(abilityState.Performer.Hex, 3, true))
+							{
+								if (possibleHex != null && possibleHex.IsFeatureless())
+								{
+									list.Add(possibleHex);
+								}
+							}
+						},
+					false, $"Create one 1-hex hazardous terrain in one hex within {Icons.Inline(Icons.Range)}3");
+					if (selectedHex != null)
+					{
+						abilityState.SetPerformed();
+						abilityState.SetCustomValue(this, "CreatedTerrain", selectedHex);
+						await CreateHazardousTerrain(selectedHex, abilityState.Performer);
+					}
+				})
+				.Build()),
+
 				new AbilityCardAbility(AttackAbility.Builder()
 					.WithDamage(2, new AttackSquare(this, new Vector2(0.2f, 0.3f)))
 					.WithTargets(3)
 					.WithCustomGetTargets(async (state, list) =>
 					{
-						Hex hex = await AbilityCmd.SelectHex(state, createList =>
-						{
-							foreach (Hex possibleHex in RangeHelper.GetHexesInRange(state.Performer.Hex, 3))
-							{
-								if (possibleHex != null && possibleHex.IsFeatureless())
-								{
-									createList.Add(possibleHex);
-								}
-							}
-						}, false, $"Create one 1-hex hazardous terrain in one hex within {Icons.Inline(Icons.Range)}3");
-						if (hex != null)
-						{
-							await CreateHazardousTerrain(hex, state.Performer);
-							list.AddRange(GameController.Instance.Map.Figures
-								.Where(figure => RangeHelper.GetHexesInRange(hex, 1, true, true)
-								.Any()));
-						}
+						Hex hex = state.ActionState.GetAbilityState<OtherAbility.State>(1).GetCustomValue<Hex>(this, "CreatedTerrain");
+						list.AddRange(RangeHelper.GetFiguresInRange(hex, 1, true));
 					})
-					.WithConditionalAbilityCheck(state => AbilityCmd.HasPerformedAbility(state, 0))
+					.WithConditionalAbilityCheck(async state => (await AbilityCmd.HasPerformedAbility(state, 0)) && (await AbilityCmd.HasPerformedAbility(state, 1)))
 					.Build())
 		];
 		public override int XP => 1;

@@ -36,7 +36,11 @@ public class Photosynthesis : ThornreaperCardModel<Photosynthesis.CardTop, Photo
 					{
 						if (GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Strong or ElementState.Waning)
 						{
-							HealAbility.Builder().WithHealValue(1).WithTarget(Target.Self).Build();
+							ActionState actionState = new ActionState(parameters.Figure,
+							[
+								HealAbility.Builder().WithHealValue(1).WithTarget(Target.Self).Build(),
+							]);
+							await actionState.Perform();
 						}	
 					});
 				}
