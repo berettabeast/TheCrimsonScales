@@ -3,66 +3,41 @@ using Godot;
 
 public class Midsummer : ThornreaperCardModel<Midsummer.CardTop, Midsummer.CardBottom>
 {
-	public override string Name => "Inner Reflection";
+	public override string Name => "Midsummer";
 	public override int Level => 1;
-	public override int Initiative => 53;
+	public override int Initiative => 50;
 	protected override int AtlasIndex => 29 - 6;
 
 	public class CardTop : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(AttackAbility.Builder()
-				.WithDamage(1, new AttackDiamond(this, new Vector2(0.32887793f, 0.2931021f)))
-				.WithRange(3, new RangeSquare(this, new Vector2(0.55187505f, 0.2931021f)))
-				.WithPierce(3)
-				.WithConditions(Conditions.Wound1)
+			new AbilityCardAbility(HealAbility.Builder()
+				.WithHealValue(3, new HealSquare(this, new Vector2(0.2f, 0.3f)))
+				.WithRange(3, new RangeSquare(this, new Vector2(0.3f, 0.5f)))
 				.Build())
 		];
 
-		public override int XP => 1;
+		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Light)];
 	}
 
 	public class CardBottom : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(LootAbility.Builder()
-				.WithRange(2)
-				.WithOnAbilityEnded(async state =>
-				{
-					List<Figure> targetedFigures = new List<Figure>();
-					for(int i = 0; i < state.LootedCoinCount; i++)
+			new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
 					{
-						Figure figure = await AbilityCmd.SelectFigure(state, list =>
+						if (GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Waning)
 						{
-							foreach(Figure otherFigure in RangeHelper.GetFiguresInRange(state.Performer.Hex, 2))
-							{
-								if(state.Performer.AlliedWith(otherFigure) && otherFigure is Character && !targetedFigures.Contains(otherFigure))
-								{
-									list.Add(otherFigure);
-								}
-							}
-						}, autoSelectIfOne: false, hintText: () => "Select a character ally to receive a coin");
-
-						if(figure != null)
-						{
-							targetedFigures.Add(figure);
-
-							state.Performer.RemoveCoin();
-							figure.AddCoin();
-
+							await AbilityCmd.InfuseElement(state, Element.Light);
 						}
-					}
+					})
+				.Build()),
 
-					if(targetedFigures.Count == 1)
-					{
-					}
-				})
+			new AbilityCardAbility(MoveAbility.Builder()
+				.WithDistance(4)
 				.Build())
 		];
-
-		public override int XP => 2;
-		public override bool Loss => true;
 	}
 }

@@ -38,9 +38,12 @@ public class ExtendedBranch : ThornreaperCardModel<ExtendedBranch.CardTop, Exten
 					{			
 						if (GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Strong or ElementState.Waning)
 						{
-							_hintText = $"{Icons.HintText(Icons.Attack)}3";
-						}			
-						return _hintText;
+							return $"{Icons.HintText(Icons.Attack)}3";
+						}
+						else
+						{
+							return $"{Icons.HintText(Icons.Attack)}2";
+						}	
 					})
 				.Build())
 		];
