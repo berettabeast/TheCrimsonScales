@@ -5,7 +5,12 @@ public partial class Thornreaper : Character
 {
 	private ThornreaperModel _ThornreaperModel;
 
-	public List<AbilityCard> PrayerCards { get; } = new List<AbilityCard>();
+	public override async GDTask OnScenarioSetupCompleted()
+	{
+		await base.OnScenarioSetupCompleted();
+
+		object subscriber = new object();
+	}
 
 	public override async GDTask Spawn(SavedCharacter savedCharacter, int index)
 	{

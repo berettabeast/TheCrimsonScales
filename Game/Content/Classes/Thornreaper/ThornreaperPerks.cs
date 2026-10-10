@@ -7,16 +7,20 @@ public class ThornreaperPerks
 	{
 	}
 
-	public class RemoveTwoMinusOne : ThornreaperPerk
+	public class ReplaceOneMinusOneWithOnePlusOneIfLightIsStrongOrWaning : ThornreaperPerk
 	{
 		public override List<AMDCardModel> CardsToRemove { get; } =
 		[
 			ModelDB.AMDCard<MinusOneAMDCard>(),
-			ModelDB.AMDCard<MinusOneAMDCard>()
+		];
+
+		public override List<AMDCardModel> CardsToAdd { get; } =
+		[
+			ModelDB.AMDCard<ThornreaperAMDCards.PlusOneIfLightIsStrongOrWaningRolling>(),
 		];
 	}
 
-	public class ReplaceOneMinusTwoWithOneMinusOneGivePrayerCardAndOnePlusZero : ThornreaperPerk
+	public class ReplaceOneMinusTwoWithOnePlusZero : ThornreaperPerk
 	{
 		public override List<AMDCardModel> CardsToRemove { get; } =
 		[
@@ -29,112 +33,141 @@ public class ThornreaperPerks
 		];
 	}
 
-	public class ReplaceOneMinusOneWithOnePlusZeroCurse : ThornreaperPerk
+	public class ReplaceOnePlusZeroWithOnePlusTwo : ThornreaperPerk
 	{
 		public override List<AMDCardModel> CardsToRemove { get; } =
 		[
-			ModelDB.AMDCard<MinusOneAMDCard>()
-		];
-
-		public override List<AMDCardModel> CardsToAdd { get; } =
-		[
-			ModelDB.AMDCard<ThornreaperAMDCards.PlusZeroCurse>()
-		];
-	}
-
-	public class ReplaceTwoPlusZeroWithOnePlusZeroLightRolling : ThornreaperPerk
-	{
-		public override List<AMDCardModel> CardsToRemove { get; } =
-		[
-			ModelDB.AMDCard<PlusZeroAMDCard>(),
 			ModelDB.AMDCard<PlusZeroAMDCard>()
 		];
 
 		public override List<AMDCardModel> CardsToAdd { get; } =
 		[
+			ModelDB.AMDCard<ThornreaperAMDCards.PlusTwo>()
+		];
+	}
+
+	public class AddThreePlusOneIfLightIsStrongOrWaning : ThornreaperPerk
+	{
+		public override List<AMDCardModel> CardsToAdd { get; } =
+		[
+			ModelDB.AMDCard<ThornreaperAMDCards.PlusOneIfLightIsStrongOrWaningRolling>(),
+			ModelDB.AMDCard<ThornreaperAMDCards.PlusOneIfLightIsStrongOrWaningRolling>(),
+			ModelDB.AMDCard<ThornreaperAMDCards.PlusOneIfLightIsStrongOrWaningRolling>()
+		];
+	}
+
+	public class AddTwoInfuseLightRolling : ThornreaperPerk
+	{
+		public override List<AMDCardModel> CardsToAdd { get; } =
+		[
+			ModelDB.AMDCard<ThornreaperAMDCards.PlusZeroLightRolling>(),
 			ModelDB.AMDCard<ThornreaperAMDCards.PlusZeroLightRolling>()
 		];
 	}
 
-	public class ReplaceTwoPlusZeroWithOnePlusZeroEarthRolling : ThornreaperPerk
-	{
-		public override List<AMDCardModel> CardsToRemove { get; } =
-		[
-			ModelDB.AMDCard<PlusZeroAMDCard>(),
-			ModelDB.AMDCard<PlusZeroAMDCard>()
-		];
-
-		public override List<AMDCardModel> CardsToAdd { get; } =
-		[
-			ModelDB.AMDCard<ThornreaperAMDCards.PlusZeroEarthRolling>()
-		];
-	}
-
-	public class ReplaceOnePlusZeroWithOnePlusOneGrantOneAllyShieldOne : ThornreaperPerk
-	{
-		public override List<AMDCardModel> CardsToRemove { get; } =
-		[
-			ModelDB.AMDCard<PlusZeroAMDCard>(),
-		];
-
-		public override List<AMDCardModel> CardsToAdd { get; } =
-		[
-			ModelDB.AMDCard<ThornreaperAMDCards.PlusOneGrantOneAllyShieldOne>()
-		];
-	}
-
-	public class ReplaceOnePlusOneWithOnePlusThree : ThornreaperPerk
-	{
-		public override List<AMDCardModel> CardsToRemove { get; } =
-		[
-			ModelDB.AMDCard<PlusOneAMDCard>(),
-		];
-
-		public override List<AMDCardModel> CardsToAdd { get; } =
-		[
-			ModelDB.AMDCard<ThornreaperAMDCards.PlusThree>()
-		];
-	}
-
-	public class AddOnePlusOneWoundMuddle : ThornreaperPerk
+	public class AddThreeInfuseEarthIfLightIsStrongOrWaningRolling : ThornreaperPerk
 	{
 		public override List<AMDCardModel> CardsToAdd { get; } =
 		[
-			ModelDB.AMDCard<ThornreaperAMDCards.PlusOneWoundMuddle>()
+			ModelDB.AMDCard<ThornreaperAMDCards.InfuseEarthIfLightIsStrongOrWaningRolling>(),
+			ModelDB.AMDCard<ThornreaperAMDCards.InfuseEarthIfLightIsStrongOrWaningRolling>(),
+			ModelDB.AMDCard<ThornreaperAMDCards.InfuseEarthIfLightIsStrongOrWaningRolling>(),
 		];
 	}
 
-	public class AddTwoPlusZeroHealOneAllyOrSelfRolling : ThornreaperPerk
+	public class AddOneCreateHazardousTerrain : ThornreaperPerk
 	{
 		public override List<AMDCardModel> CardsToAdd { get; } =
 		[
-			ModelDB.AMDCard<ThornreaperAMDCards.PlusZeroHealOneAllyOrSelfRolling>(),
-			ModelDB.AMDCard<ThornreaperAMDCards.PlusZeroHealOneAllyOrSelfRolling>()
+			ModelDB.AMDCard<ThornreaperAMDCards.CreateHazardousTerrain>()
 		];
 	}
 
-	public class IgnoreScenarioEffectsRemoveOnePlusZero : ThornreaperPerk
+	public class AddOneRetaliateThreeOnHazardousTerrainRolling : ThornreaperPerk
 	{
-		public override List<AMDCardModel> CardsToRemove { get; } =
+		public override List<AMDCardModel> CardsToAdd { get; } =
 		[
-			ModelDB.AMDCard<PlusZeroAMDCard>()
+			ModelDB.AMDCard<ThornreaperAMDCards.PersistentRetaliateThreeOnNextAdjacentAttackInHazardousTerrain>()
 		];
-
-		public override bool IgnoreScenarioEffects => true;
 	}
 
-	public class GiftOfTheOak : ThornreaperPerk, IEventSubscriber
+	public class AddOneShieldThreeOnHazardousTerrainRolling : ThornreaperPerk
 	{
-		protected override string Title => "Gift of the Oak";
+		public override List<AMDCardModel> CardsToAdd { get; } =
+		[
+			ModelDB.AMDCard<ThornreaperAMDCards.PersistentShieldThreeOnNextAttackDamageInHazardousTerrain>(),
+		];
+	}
+
+	public class IgnoreItemEffectsAndAddOnePlusOneIfLightIsStrongOrWaningRolling : ThornreaperPerk
+	{
+		public override List<AMDCardModel> CardsToAdd { get; } =
+		[
+			ModelDB.AMDCard<ThornreaperAMDCards.PlusOneIfLightIsStrongOrWaningRolling>()
+		];
+
+		public override bool IgnoreItemMinusOneEffects => true;
+
+	}
+
+	public class BrambleBulwark : ThornreaperPerk, IEventSubscriber
+	{
+		protected override string Title => "Bramble Bulwark";
+		public override int PerkBoxCount => 2;
 
 		public override string GetNonAMDDescription(RichTextParameters richTextParameters) =>
-			$"At the start of each scenario, perform: {Icons.Inline(Icons.GetCondition(Conditions.Bless), richTextParameters)}, {Icons.Inline(Icons.Range, richTextParameters)}2.";
+			$"Gain {Icons.Inline(Icons.Shield, richTextParameters)}1 while you occupy hazardous terrain";
 
 		public override async GDTask OnScenarioSetupPhaseCompleted(Character character)
 		{
 			await base.OnScenarioSetupPhaseCompleted(character);
 
-			await new ActionState(character, [ConditionAbility.Builder().WithConditions(Conditions.Bless).WithRange(2).Build()]).Perform();
+			bool shielded = false;
+
+			ScenarioEvents.FigureEnteredHexEvent.Subscribe(this,
+				parameters => parameters.Figure == character,
+				async parameters =>
+				{
+					bool hazardous = parameters.Hex.HasHexObjectOfType<HazardousTerrain>();
+
+					if (hazardous && !shielded)
+					{
+						await AbilityCmd.AddShield(character, this, 1);
+						shielded = true;
+					}
+					else if (!hazardous && shielded)
+					{
+						AbilityCmd.RemoveShield(character, this);
+						shielded = false;
+					}
+				});
+			
+			if (character.Hex.HasHexObjectOfType<HazardousTerrain>())
+			{
+				await AbilityCmd.AddShield(character, this, 1);
+				shielded = true;
+			}
 		}
+	}
+
+	public class RiseAndShine : ThornreaperPerk, IEventSubscriber
+	{
+		protected override string Title => "Rise and Shine";
+
+		public override string GetNonAMDDescription(RichTextParameters richTextParameters) =>
+			$"Whenever you long rest, {Icons.InlineElement(Element.Light, richTextParameters)}";
+
+		public override async GDTask OnScenarioSetupPhaseCompleted(Character character)
+		{
+			await base.OnScenarioSetupPhaseCompleted(character);
+
+			ScenarioEvents.LongRestEndedEvent.Subscribe(this,
+				parameters => parameters.Character == character,
+				async parameters =>
+				{
+					await AbilityCmd.InfuseElement(null, Element.Light, character);
+				});
+		}
+
 	}
 }
