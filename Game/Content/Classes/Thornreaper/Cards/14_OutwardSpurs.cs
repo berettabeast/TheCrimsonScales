@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using Fractural.Tasks;
 using Godot;
@@ -44,31 +45,22 @@ public class OutwardSpurs : ThornreaperLevelUpCardModel<OutwardSpurs.CardTop, Ou
 
 	public class CardBottom : ThornreaperCardSide
 	{
+		int _moveDistance = 2;
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(OtherAbility.Builder()
-				.WithPerformAbility(async state =>
+			new AbilityCardAbility(SufferDamageAbility.Builder()
+				.WithDamage(1)
+				.WithTarget(Target.Enemies | Target.TargetAll)
+				.WithOnAbilityEnded(async state =>
 				{
-					int enemiesDamaged = 0;
-					foreach (Figure figure in RangeHelper.GetFiguresInRange(state.Performer.Hex, 1, false)
-						.Where(f => f.EnemiesWith(state.Performer)))
-					{
-						await AbilityCmd.SufferDamage(state, figure, 1, state.Performer);
-						enemiesDamaged++;
-					}
-					state.SetCustomValue(this, "EnemiesDamaged", enemiesDamaged);
-					state.SetPerformed();
+					_moveDistance = 2 + state.DamagedFigures.Count();
+
+					await GDTask.CompletedTask;
 				})
 				.Build()),
 
 			new AbilityCardAbility(MoveAbility.Builder()
-				.WithDistance(2, new MoveSquare(this, new Vector2(0.2f, 0.3f)))
-				.WithOnAbilityStarted(async abilityState =>
-				{
-					int extraMove = abilityState.GetCustomValue<int>(this, "EnemiesDamaged");
-					abilityState.AdjustMoveValue(extraMove);
-					await GDTask.CompletedTask;
-				})
+				.WithDistance(new DynamicInt<MoveAbility.State>(state => _moveDistance), new MoveSquare(this, new Vector2(0.2f, 0.3f)))
 				.Build())
 		];
 	}

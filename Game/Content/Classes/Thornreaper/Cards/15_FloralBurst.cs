@@ -7,7 +7,7 @@ public class FloralBurst : ThornreaperLevelUpCardModel<FloralBurst.CardTop, Flor
 	public override string Name => "Floral Burst";
 	public override int Level => 2;
 	public override int Initiative => 30;
-	protected override int AtlasIndex => 29 - 14;
+	protected override int AtlasIndex => 29 - 15;
 
 	public class CardTop : ThornreaperCardSide
 	{
