@@ -1,107 +1,97 @@
 using System.Collections.Generic;
+using System.Linq;
 using Fractural.Tasks;
 using Godot;
 
 public class BarbedOnslaught : ThornreaperLevelUpCardModel<BarbedOnslaught.CardTop, BarbedOnslaught.CardBottom>
 {
-	public override string Name => "Beacon of Hope";
+	public override string Name => "Barbed Onslaught";
 	public override int Level => 5;
-	public override int Initiative => 82;
+	public override int Initiative => 58;
 	protected override int AtlasIndex => 29 - 20;
 
 	public class CardTop : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(HealAbility.Builder()
-				.WithHealValue(3, new HealDiamondPlus(this, new Vector2(0.43511614f, 0.20235652f)))
-				.WithRange(3, new RangeSquare(this, new Vector2(0.66057616f, 0.20235652f)))
-				.Build()),
-
-			new AbilityCardAbility(AttackAbility.Builder()
-				.WithDamage(2, new AttackDiamond(this, new Vector2(0.28136954f, 0.32378387f)))
-				.WithCustomGetTargets((state, list) =>
+			new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
 				{
-					HealAbility.State healAbilityState = state.ActionState.GetAbilityState<HealAbility.State>(0);
-					foreach(Figure targetedFigure in healAbilityState.UniqueTargetedFigures)
+					List<Hex> selected = await AbilityCmd.SelectHexes(state, list =>
 					{
-						if(!targetedFigure.IsDead)
+						foreach (Hex hex in RangeHelper.GetHexesInRange(state.Performer.Hex, 3, false))
 						{
-							foreach(Figure adjacentFigure in RangeHelper.GetFiguresInRange(targetedFigure.Hex, 1))
-							{
-								list.Add(adjacentFigure);
-							}
+							if (hex != null && hex.IsFeatureless())
+								list.Add(hex);
+						}
+					}, 0, 2, true, $"Create hazardous terrain in two featureless hexes within {Icons.Inline(Icons.Range)}3");
+
+					foreach (Hex hex in selected)
+					{
+						await CreateHazardousTerrain(hex, state.Performer);
+						foreach (Figure figure in hex.GetHexObjectsOfType<Figure>().Where(f => f.EnemiesWith(state.Performer)))
+						{
+							//may need to add skip
+							await AbilityCmd.SufferDamage(figure, 2, state.Performer, false);
 						}
 					}
+					state.SetPerformed();
 				})
-				.WithConditionalAbilityCheck(state => AbilityCmd.HasPerformedAbility(state, 0))
-				.Build())
+				.Build()),
 		];
 
-		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Light)];
+		public override int XP => 1;
 	}
 
 	public class CardBottom : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(ConditionAbility.Builder()
-				.WithConditions([Conditions.Bless, Conditions.Bless])
-				.WithRange(3)
-				.Build()),
-
-			new AbilityCardAbility(UseSlotAbility.Builder()
+			new AbilityCardAbility(OtherActiveAbility.Builder()
 				.WithOnActivate(async state =>
-					{
-						ScenarioEvents.AMDCardDrawnEvent.Subscribe(state, this,
-							canApply: canApplyParameters =>
-								state.Performer.AlliedWith(canApplyParameters.Performer) &&
-								canApplyParameters.AMDCard.Model is BlessAMDCard,
-							apply: async applyParameters =>
+				{
+					bool buffed = false;
+					ScenarioEvents.FigureEnteredHexEvent.Subscribe(state, this,
+						parameters => parameters.Figure == state.Performer,
+						async parameters =>
+						{
+							bool hazardous = parameters.Hex.HasHexObjectOfType<HazardousTerrain>();
+
+							if (hazardous && !buffed)
 							{
-								ScenarioEvents.AfterAttackPerformedEvent.Subscribe(state, this,
-									canApply: canApplyParameters =>
-										canApplyParameters.AbilityState == applyParameters.AbilityState,
-									apply: async parameters =>
-									{
-										ScenarioEvents.AfterAttackPerformedEvent.Unsubscribe(state, this);
-
-										ActionState actionState = new ActionState(parameters.AbilityState.Performer,
-											[
-												HealAbility.Builder()
-													.WithHealValue(6)
-													.WithTarget(Target.Self)
-													.Build()
-											]
-										);
-
-										await actionState.Perform();
-
-										await state.AdvanceUseSlot();
-									}
-								);
-
-								await GDTask.CompletedTask;
+								await AbilityCmd.AddShield(parameters.Figure, this, 1);
+								await AbilityCmd.AddRetaliate(parameters.Figure, this, 2, 1);
+								buffed = true;
 							}
-						);
+							else if (!hazardous && buffed)
+							{
+								AbilityCmd.RemoveShield(parameters.Figure, this);
+								AbilityCmd.RemoveRetaliate(parameters.Figure, this);
+								buffed = false;
+							}
+							await GDTask.CompletedTask;
 
-						await GDTask.CompletedTask;
-					}
-				)
-				.WithOnDeactivate(async state =>
+						});
+
+					
+					if (state.Performer.Hex.HasHexObjectOfType<HazardousTerrain>())
 					{
-						ScenarioEvents.AMDCardDrawnEvent.Unsubscribe(state, this);
-						ScenarioEvents.AfterAttackPerformedEvent.Unsubscribe(state, this);
-
-						await GDTask.CompletedTask;
+						await AbilityCmd.AddShield(state.Performer, this, 1);
+						await AbilityCmd.AddRetaliate(state.Performer, this, 2, 1);
+						buffed = true;
 					}
-				)
-				.WithUseSlot(new UseSlot(new Vector2(0.5f, 0.9f)))
+					await GDTask.CompletedTask;
+				})
+				.WithOnDeactivate(async state =>
+				{
+					ScenarioEvents.FigureEnteredHexEvent.Unsubscribe(state, this);
+					await GDTask.CompletedTask;
+				})
 				.Build())
 		];
 
-		public override int XP => 1;
-		public override bool Persistent => true;
+		public override int XP => 2;
 		public override bool Loss => true;
+		public override bool Persistent => true;
 	}
 }
