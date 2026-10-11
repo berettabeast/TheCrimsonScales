@@ -1,63 +1,53 @@
 using System.Collections.Generic;
+using System.Data;
 using Fractural.Tasks;
 using Godot;
 
 public class PricklySituation : ThornreaperLevelUpCardModel<PricklySituation.CardTop, PricklySituation.CardBottom>
 {
-	public override string Name => "Vital Bond";
+	public override string Name => "Prickly Situation";
 	public override int Level => 4;
-	public override int Initiative => 48;
+	public override int Initiative => 20;
 	protected override int AtlasIndex => 29 - 18;
 
 	public class CardTop : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
+			ConsumeEarthOrSkipAction(),
+
 			new AbilityCardAbility(AttackAbility.Builder()
-				.WithDamage(2, new AttackDiamond(this, new Vector2(0.39718983f, 0.180141f)))
-				.WithTargets(2)
-				.WithRange(4, new RangeSquare(this, new Vector2(0.72036666f, 0.180141f)))
-				.Build()),
-
-			new AbilityCardAbility(OtherAbility.Builder()
-				.WithPerformAbility(async state =>
-				{
-					AttackAbility.State attackAbilityState = state.ActionState.GetAbilityState<AttackAbility.State>(0);
-
-					ConfirmPrompt.Answer confirmAnswer =
-						await PromptManager.Prompt(new ConfirmPrompt(null, () => "Swap the positions of the targets?"), state.Performer);
-					if(confirmAnswer.Confirmed)
-					{
-						state.SetPerformed();
-
-						Figure figureA = attackAbilityState.UniqueTargetedFigures[0];
-						Figure figureB = attackAbilityState.UniqueTargetedFigures[0];
-
-						Hex oldFigureAHex = figureA.Hex;
-
-						// Swap the positions, currently not applying any effects in the hexes
-						figureA.SetOriginHexAndRotation(figureB.Hex);
-						figureB.SetOriginHexAndRotation(oldFigureAHex);
-
-						await AbilityCmd.GainXP(state.Performer, 1);
-
-						foreach(Figure figure in attackAbilityState.UniqueTargetedFigures)
+				.WithDamage(6)
+				.WithRange(2, new RangeSquare(this, new Vector2(0.2f, 0.3f)))
+				.WithAfterTargetConfirmedSubscription(
+					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
+						parameters => true,
+						async parameters =>
 						{
-							await AbilityCmd.AddCondition(state, figure, Conditions.Muddle);
-						}
-					}
+							Hex performerHex = parameters.AbilityState.Performer.Hex;
+							Hex targetHex = parameters.AbilityState.Target.Hex;
 
-					await GDTask.CompletedTask;
-				})
-				.WithConditionalAbilityCheck(async state =>
-					{
-						await GDTask.CompletedTask;
+							HashSet<Hex> pathHexes = RangeHelper.GetHexesOnAnyShortestPath(performerHex, targetHex);
 
-						AttackAbility.State attackAbilityState = state.ActionState.GetAbilityState<AttackAbility.State>(0);
-						return attackAbilityState.Performed && attackAbilityState.UniqueTargetedFigures.Count == 2 &&
-						       attackAbilityState.UniqueTargetedFigures.TrueForAll(figure => !figure.IsDead);
-					}
-				)
+							List<Hex> selected = await AbilityCmd.SelectHexes(
+								parameters.AbilityState,
+								validHexes =>
+								{
+									foreach (Hex hex in pathHexes)
+									{
+										validHexes.Add(hex);
+									}
+								}, 1, parameters.AbilityState.AbilityRange, true,
+								"Select path to attack target:");
+							
+							foreach (Hex hex in selected)
+							{
+								if (hex != null && hex.IsFeatureless())
+								{
+									await CreateHazardousTerrain(hex, parameters.AbilityState.Performer);
+								}
+							}
+						}))
 				.Build())
 		];
 	}
@@ -68,52 +58,39 @@ public class PricklySituation : ThornreaperLevelUpCardModel<PricklySituation.Car
 		[
 			new AbilityCardAbility(OtherAbility.Builder()
 				.WithPerformAbility(async state =>
+				{
+					if (GetLightElementState() is ElementState.Strong or ElementState.Waning)
 					{
-						Figure figure = await AbilityCmd.SelectFigure(state,
-							list =>
-							{
-								foreach(Figure figure in RangeHelper.GetFiguresInRange(state.Performer.Hex, 1))
-								{
-									if(
-										state.Performer.AlliedWith(figure) &&
-										figure is Character character)
-									{
-										list.Add(figure);
-									}
-								}
-							}
-						);
-
-						if(figure == null)
-						{
-							return;
-						}
-
-						state.SetPerformed();
-
-						Character character = (Character)figure;
-						AbilityCard abilityCard =
-							await AbilityCmd.SelectAbilityCard(character, CardState.Lost, hintText: "Select a lost card to recover");
-						if(abilityCard != null)
-						{
-							await AbilityCmd.ReturnToHand(abilityCard);
-						}
-
-						IEnumerable<AbilityCard> abilityCards = await AbilityCmd.SelectAbilityCards(character, CardState.Discarded, 0, 2,
-							hintText: "Select up to two discarded cards to recover");
-
-						foreach(AbilityCard card in abilityCards)
-						{
-							await AbilityCmd.ReturnToHand(card);
-						}
+						await AbilityCmd.InfuseElement(state, Element.Earth);
 					}
-				)
+					state.SetPerformed();
+				})
+				.Build()),
+
+			new AbilityCardAbility(MoveAbility.Builder()
+				.WithDistance(2, new MoveSquare(this, new Vector2(0.2f, 0.3f)))
+				.Build()),
+
+			new AbilityCardAbility(ShieldAbility.Builder()
+				.WithShieldValue(1)
+				.WithOnAbilityStarted(async state =>
+				{
+					if (GetLightElementState() is ElementState.Strong or ElementState.Waning)
+					{
+						state.AdjustAdditionalShield(1);
+					}
+
+					ScenarioEvents.FinishElementConsumedEvent.Subscribe(state, this, parameters => parameters.ConsumedElement == Element.Light,
+					async parameters =>
+					{
+						state.AdjustAdditionalShield(-1);
+						await GDTask.CompletedTask;
+					});
+					await GDTask.CompletedTask;
+				})
 				.Build())
 		];
 
-		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Earth)];
-		public override int XP => 1;
-		public override bool Unrecoverable => true;
-		public override bool Loss => true;
+		public override bool Round => true;
 	}
 }

@@ -436,6 +436,14 @@ public static class AbilityCmd
 		}
 	}
 
+	public static async GDTask DestroyHazardousTerrain(HazardousTerrain hazardousTerrain)
+	{
+		if(!hazardousTerrain.CannotBeDestroyed)
+		{
+			await hazardousTerrain.Destroy();
+		}
+	}
+
 	public static async GDTask DisarmTrap(Trap trap, Figure potentialDisarmer)
 	{
 		if(!trap.CannotBeDestroyed)
