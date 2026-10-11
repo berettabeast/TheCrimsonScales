@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using Fractural.Tasks;
 using Godot;
 
@@ -19,37 +21,45 @@ public class BranchedSlam : ThornreaperLevelUpCardModel<BranchedSlam.CardTop, Br
 					ScenarioEvents.AttackAfterTargetConfirmedEvent.Subscribe(state, this, 
 						parameters => parameters.Performer == state.Performer &&
 						parameters.AbilityState.AbilityRangeType == RangeType.Melee &&
-						parameters.AbilityState.GetRedAOEHexes() != null,
+						parameters.AbilityState.GetRedAOEHexes() != null &&
+						!parameters.AbilityState.GetCustomValue<bool>(this, "BranchedSlamApplied"),
 						async parameters => 
 						{
+							parameters.AbilityState.SetCustomValue(this, "BranchedSlamApplied", true);
 							var originalHexes = parameters.AbilityState.GetRedAOEHexes();
 							var pivot = await AbilityCmd.SelectHex(parameters.AbilityState, list =>
 							{
 								foreach (Hex hex in originalHexes)
 								{
-									list.Add(hex);
+									Figure figure = hex.GetFigures()?.FirstOrDefault();
+									if (figure != null && !figure.AlliedWith(parameters.Performer))
+									{
+										list.Add(hex);
+									}
 								}
 							}, true, "Select black hex for Branched Slam");
 
-							var selectionAbility = AttackAbility.Builder()
-								.WithDamage(null)
-								.WithNoAMDCards()
-								.WithCustomGetPerformHex(_ => pivot)
-								.WithAOEPattern(new AOEPattern([
-								new AOEHex(Vector2I.Zero, AOEHexType.Yellow),
-								new AOEHex(Vector2I.Zero.Add(Direction.NorthEast), AOEHexType.Red),
-								new AOEHex(Vector2I.Zero.Add(Direction.NorthEast).Add(Direction.East), AOEHexType.Red)
-							]))
-								.Build();
+							AOEPrompt.Answer selectionArea = await PromptManager.Prompt(new AOEPrompt(
+								parameters.Performer,
+								pattern: new AOEPattern([
+									new AOEHex(Vector2I.Zero, AOEHexType.Gray),
+									new AOEHex(Vector2I.Zero.Add(Direction.NorthEast), AOEHexType.Red),
+									new AOEHex(Vector2I.Zero.Add(Direction.NorthEast).Add(Direction.East), AOEHexType.Red)]),
+								forcedOriginHex: pivot,
+								effectCollection: null,
+								getHintText: () => "Target additional hexes for Branched Slam:", 
+								range: 1), parameters.Performer);
 
-							await selectionAbility.Perform(state.ActionState);
+							if (selectionArea.Skipped)
+							{
+								return;
+							}
 
-							var addedHexes = state.ActionState.GetAbilityState<AttackAbility.State>(0)
-								?.GetRedAOEHexes() ?? new List<Hex>();
+							var addedHexes = selectionArea.AOEHexes;
 								
 							foreach (var hex in addedHexes)
 							{
-								parameters.AbilityState.AbilityAddAOEHex(new AOEHex(hex.Coords, AOEHexType.Red));
+								parameters.AbilityState.TargetedAOEHexes.Add(hex);
 							}
 						});
 					await GDTask.CompletedTask;
