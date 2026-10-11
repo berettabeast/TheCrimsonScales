@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using Fractural.Tasks;
 using Godot;
 
 public class BranchedSlam : ThornreaperLevelUpCardModel<BranchedSlam.CardTop, BranchedSlam.CardBottom>
 {
-	public override string Name => "Devout Assistance";
+	public override string Name => "Branched Slam";
 	public override int Level => 5;
-	public override int Initiative => 37;
+	public override int Initiative => 45;
 	protected override int AtlasIndex => 29 - 21;
 
 	public class CardTop : ThornreaperCardSide
@@ -17,82 +18,82 @@ public class BranchedSlam : ThornreaperLevelUpCardModel<BranchedSlam.CardTop, Br
 			new AbilityCardAbility(OtherActiveAbility.Builder()
 				.WithOnActivate(async state =>
 				{
-					ScenarioEvents.FigureTurnStartedEvent.Subscribe(state, this,
-						canApplyParameters =>
-							canApplyParameters.Figure == state.Performer,
-						async parameters =>
+					ScenarioEvents.AttackAfterTargetConfirmedEvent.Subscribe(state, this, 
+						parameters => parameters.Performer == state.Performer &&
+						parameters.AbilityState.AbilityRangeType == RangeType.Melee &&
+						parameters.AbilityState.GetRedAOEHexes() != null &&
+						!parameters.AbilityState.GetCustomValue<bool>(this, "BranchedSlamApplied"),
+						async parameters => 
 						{
-							ActionState actionState = new ActionState(state.Performer,
-							[
-								GrantAbility.Builder()
-									.WithGetAbilities(grantAbilityState =>
-									[
-										ShieldAbility.Builder()
-											.WithShieldValue(1)
-											.WithConditionalAbilityCheck(state => AbilityCmd.AskConsumeElement(state.Performer, Element.Earth))
-											.WithOnAbilityEndedPerformed(async shieldAbilityState =>
-											{
-												ScenarioEvents.RoundEndedEvent.Subscribe(shieldAbilityState, this,
-													parameters => true,
-													async parameters =>
-													{
-														await shieldAbilityState.RemoveFromActive();
-													});
-												await GDTask.CompletedTask;
-											})
-											.Build(),
+							parameters.AbilityState.SetCustomValue(this, "BranchedSlamApplied", true);
+							var originalHexes = parameters.AbilityState.GetRedAOEHexes();
+							var pivot = await AbilityCmd.SelectHex(parameters.AbilityState, list =>
+							{
+								foreach (Hex hex in originalHexes)
+								{
+									Figure figure = hex.GetFigures()?.FirstOrDefault();
+									if (figure != null && !figure.AlliedWith(parameters.Performer))
+									{
+										list.Add(hex);
+									}
+								}
+							}, true, "Select black hex for Branched Slam");
 
-										HealAbility.Builder()
-											.WithHealValue(3)
-											.WithTarget(Target.Self)
-											.WithConditionalAbilityCheck(async healAbilityState =>
-											{
-												await GDTask.CompletedTask;
-												return !healAbilityState.ActionState.GetAbilityState<ShieldAbility.State>(0).Performed &&
-												       await AbilityCmd.AskConsumeElement(state.Performer, Element.Light);
-											})
-											.Build()
-									])
-									.Build()
-							]);
-							await actionState.Perform();
+							AOEPrompt.Answer selectionArea = await PromptManager.Prompt(new AOEPrompt(
+								parameters.Performer,
+								pattern: new AOEPattern([
+									new AOEHex(Vector2I.Zero, AOEHexType.Gray),
+									new AOEHex(Vector2I.Zero.Add(Direction.NorthEast), AOEHexType.Red),
+									new AOEHex(Vector2I.Zero.Add(Direction.NorthEast).Add(Direction.East), AOEHexType.Red)]),
+								forcedOriginHex: pivot,
+								effectCollection: null,
+								getHintText: () => "Target additional hexes for Branched Slam:", 
+								range: 1), parameters.Performer);
+
+							if (selectionArea.Skipped)
+							{
+								return;
+							}
+
+							var addedHexes = selectionArea.AOEHexes;
+								
+							foreach (var hex in addedHexes)
+							{
+								parameters.AbilityState.TargetedAOEHexes.Add(hex);
+							}
 						});
-
 					await GDTask.CompletedTask;
 				})
 				.WithOnDeactivate(async state =>
 				{
-					ScenarioEvents.FigureTurnStartedEvent.Unsubscribe(state, this);
-
 					await GDTask.CompletedTask;
 				})
-				.Build())
+				.Build()),
 		];
 
 		public override int XP => 2;
-		public override bool Persistent => true;
 		public override bool Loss => true;
+		public override bool Persistent => true;
 	}
 
 	public class CardBottom : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(MoveAbility.Builder()
-				.WithDistance(4, new MoveCircle(this, new Vector2(0.6207892f, 0.70303124f)))
-				.WithOnAbilityEndedPerformed(async state =>
+			new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
 				{
-					if(RangeHelper.GetFiguresInRange(state.Performer.Hex, 1, false).Any(figure => figure.EnemiesWith(state.Performer)))
+					if (GetEarthElementState() == ElementState.Waning)
 					{
 						await AbilityCmd.InfuseElement(state, Element.Earth);
 					}
-
-					if(RangeHelper.GetFiguresInRange(state.Performer.Hex, 1, false).Any(figure => figure.AlliedWith(state.Performer)))
-					{
-						await AbilityCmd.InfuseElement(state, Element.Light);
-					}
+					state.SetPerformed();
 				})
 				.Build()),
+
+			new AbilityCardAbility(MoveAbility.Builder()
+				.WithDistance(3, new MoveSquare(this, new Vector2(0.2f, 0.3f)))
+				.Build())
 		];
 	}
 }

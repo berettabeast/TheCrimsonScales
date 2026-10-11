@@ -5,38 +5,53 @@ using Godot;
 
 public class ViolentSprout : ThornreaperCardModel<ViolentSprout.CardTop, ViolentSprout.CardBottom>
 {
-	public override string Name => "Sacred Death";
+	public override string Name => "Violent Sprout";
 	public override int Level => 1;
-	public override int Initiative => 81;
+	public override int Initiative => 63;
 	protected override int AtlasIndex => 29 - 10;
 
 	public class CardTop : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(AttackAbility.Builder()
-				.WithDamage(3, new AttackDiamond(this, new Vector2(0.4478777f, 0.19583333f)))
-				.WithRange(3, new RangeSquare(this, new Vector2(0.66987485f, 0.19583333f)))
+			ConsumeEarthOrSkipAction(),
+
+			new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async abilityState =>
+				{
+					Hex selectedHex = await AbilityCmd.SelectHex(abilityState , list =>
+						{
+							foreach (Hex possibleHex in RangeHelper.GetHexesInRange(abilityState.Performer.Hex, 3, true))
+							{
+								if (possibleHex != null && possibleHex.IsFeatureless())
+								{
+									list.Add(possibleHex);
+								}
+							}
+						},
+					false, $"Create one 1-hex hazardous terrain in one hex within {Icons.Inline(Icons.Range)}3");
+					if (selectedHex != null)
+					{
+						abilityState.SetPerformed();
+						abilityState.SetCustomValue(this, "CreatedTerrain", selectedHex);
+						await CreateHazardousTerrain(selectedHex, abilityState.Performer);
+					}
+				})
+				.WithConditionalAbilityCheck(async state => await AbilityCmd.HasPerformedAbility(state, 0))
 				.Build()),
 
-			new AbilityCardAbility(ConditionAbility.Builder()
-				.WithConditions(Conditions.Bless)
-				.WithRange(2)
-				.WithOnAbilityEndedPerformed(async state =>
-				{
-					await AbilityCmd.GainXP(state.Performer, 1);
-				})
-				.WithConditionalAbilityCheck(async state =>
+				new AbilityCardAbility(AttackAbility.Builder()
+					.WithDamage(2, new AttackSquare(this, new Vector2(0.2f, 0.3f)))
+					.WithTargets(3)
+					.WithCustomGetTargets(async (state, list) =>
 					{
-						await GDTask.CompletedTask;
-
-						AttackAbility.State attackAbilityState = state.ActionState.GetAbilityState<AttackAbility.State>(0);
-
-						return attackAbilityState.Performed && attackAbilityState.KilledTargets.Count > 0;
-					}
-				)
-				.Build())
+						Hex hex = state.ActionState.GetAbilityState<OtherAbility.State>(1).GetCustomValue<Hex>(this, "CreatedTerrain");
+						list.AddRange(RangeHelper.GetFiguresInRange(hex, 1, true));
+					})
+					.WithConditionalAbilityCheck(async state => (await AbilityCmd.HasPerformedAbility(state, 0)) && (await AbilityCmd.HasPerformedAbility(state, 1)))
+					.Build())
 		];
+		public override int XP => 1;
 	}
 
 	public class CardBottom : ThornreaperCardSide
@@ -46,86 +61,18 @@ public class ViolentSprout : ThornreaperCardModel<ViolentSprout.CardTop, Violent
 			new AbilityCardAbility(OtherAbility.Builder()
 				.WithPerformAbility(async state =>
 					{
-						AbilityCard abilityCard = await AbilityCmd.SelectAbilityCard(state.Performer, list =>
+						if (GetLightElementState() is ElementState.Waning or ElementState.Strong)
 						{
-							if(state.Performer is Character character)
-							{
-								foreach(AbilityCard roundCard in character.RoundCards)
-								{
-									if(roundCard.CardState == CardState.Lost)
-									{
-										list.Add(roundCard);
-									}
-								}
-							}
-						}, CardState.Lost, hintText: "Select a lost card to recover.");
-
-						if(abilityCard != null)
-						{
-							await AbilityCmd.ReturnToHand(abilityCard);
-
-							state.SetPerformed();
+							await AbilityCmd.InfuseElement(state, Element.Earth);
 						}
-
-						List<AbilityCard> selectedAbilityCards =
-							await AbilityCmd.SelectAbilityCards(state.Performer as Character, CardState.Discarded, 0, 2,
-								hintText: $"Select up to two discarded cards to recover");
-
-						foreach(AbilityCard selectedAbilityCard in selectedAbilityCards)
-						{
-							await AbilityCmd.ReturnToHand(selectedAbilityCard);
-
-							state.SetPerformed();
-						}
-
-						state.SetCustomValue(this, "RecoveredCards", selectedAbilityCards.Select(card => card.ReferenceId).ToList());
-					}
-				)
+					})
 				.Build()),
 
-			new AbilityCardAbility(OtherAbility.Builder()
-				.WithPerformAbility(async state =>
-				{
-					List<int> recoveredCardIds = state.ActionState.GetAbilityState<OtherAbility.State>(0)
-						.GetCustomValue<List<int>>(this, "RecoveredCards");
-
-					AbilityCard selectedAbilityCard =
-						await AbilityCmd.SelectAbilityCard(state.Performer, list =>
-						{
-							foreach(int recoveredCardId in recoveredCardIds)
-							{
-								AbilityCard abilityCard = GameController.Instance.ReferenceManager.Get<AbilityCard>(recoveredCardId);
-								list.Add(abilityCard);
-							}
-						}, CardState.Hand, hintText: "Select a recovered card to play.");
-
-					if(selectedAbilityCard != null)
-					{
-						await selectedAbilityCard.Bottom.Perform(state.Performer);
-					}
-				})
-				.WithConditionalAbilityCheck(async state =>
-					{
-						if(!await AbilityCmd.HasPerformedAbility(state, 0))
-						{
-							return false;
-						}
-
-						List<int> recoveredCardIds = state.ActionState.GetAbilityState<OtherAbility.State>(0)
-							.GetCustomValue<List<int>>(this, "RecoveredCards");
-
-						if(recoveredCardIds == null || recoveredCardIds.Count == 0)
-						{
-							return false;
-						}
-
-						return true;
-					}
-				)
+			new AbilityCardAbility(AttackAbility.Builder()
+				.WithDamage(1, new AttackSquare(this, new Vector2(0.2f, 0.3f)))
+				.WithTarget(Target.Enemies | Target.TargetAll)
+				.WithConditions(Conditions.Immobilize)
 				.Build())
 		];
-
-		public override bool Loss => true;
-		public override bool Unrecoverable => true;
 	}
 }

@@ -1,68 +1,79 @@
 using System.Collections.Generic;
+using Fractural.Tasks;
 using Godot;
 
 public class LashingThorns : ThornreaperCardModel<LashingThorns.CardTop, LashingThorns.CardBottom>
 {
-	public override string Name => "Inner Reflection";
+	public override string Name => "Lashing Thorns";
 	public override int Level => 1;
-	public override int Initiative => 53;
+	public override int Initiative => 39;
 	protected override int AtlasIndex => 29 - 5;
 
 	public class CardTop : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
+			new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
+					{
+						if (GetLightElementState() is ElementState.Waning or ElementState.Strong)
+						{
+							await AbilityCmd.InfuseElement(state, Element.Earth);
+						}
+					})
+				.Build()),
+
 			new AbilityCardAbility(AttackAbility.Builder()
-				.WithDamage(1, new AttackDiamond(this, new Vector2(0.32887793f, 0.2931021f)))
-				.WithRange(3, new RangeSquare(this, new Vector2(0.55187505f, 0.2931021f)))
-				.WithPierce(3)
-				.WithConditions(Conditions.Wound1)
+				.WithDamage(2)
+				.WithPierce(1, new PierceSquare(this, new Vector2(0.2f, 0.3f)))
+				.WithAOEPattern(new AOEPattern([
+					new AOEHex(Vector2I.Zero, AOEHexType.Gray),
+					new AOEHex(Vector2I.Zero.Add(Direction.NorthWest), AOEHexType.Red),
+					new AOEHex(Vector2I.Zero.Add(Direction.East), AOEHexType.Red),
+				]),
+				new AOEHexMark(Vector2I.Zero.Add(Direction.NorthWest).Add(Direction.West), this, new Vector2(0.5f, 0.4f)),
+				new AOEHexMark(Vector2I.Zero.Add(Direction.East).Add(Direction.East), this, new Vector2(0.5f, 0.4f)))
+				.WithAfterTargetConfirmedSubscription(
+					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
+						parameters => parameters.Performer.Hex.HasHexObjectOfType<HazardousTerrain>(),
+						async parameters =>
+						{
+							await AbilityCmd.GainXP(parameters.Performer, 1);
+							await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light);
+							parameters.AbilityState.SingleTargetAdjustAttackValue(1);
+						}
+					))
+				.WithGetTargetingHintText(state =>
+					{
+						if (GetLightElementState() is ElementState.Strong or ElementState.Waning)
+						{
+							return $"{Icons.HintText(Icons.Attack)}3";
+						}
+						else
+						{
+							return $"{Icons.HintText(Icons.Attack)}2";
+						}
+					})
 				.Build())
 		];
-
-		public override int XP => 1;
 	}
 
 	public class CardBottom : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(LootAbility.Builder()
-				.WithRange(2)
-				.WithOnAbilityEnded(async state =>
-				{
-					List<Figure> targetedFigures = new List<Figure>();
-					for(int i = 0; i < state.LootedCoinCount; i++)
-					{
-						Figure figure = await AbilityCmd.SelectFigure(state, list =>
-						{
-							foreach(Figure otherFigure in RangeHelper.GetFiguresInRange(state.Performer.Hex, 2))
-							{
-								if(state.Performer.AlliedWith(otherFigure) && otherFigure is Character && !targetedFigures.Contains(otherFigure))
-								{
-									list.Add(otherFigure);
-								}
-							}
-						}, autoSelectIfOne: false, hintText: () => "Select a character ally to receive a coin");
+			new AbilityCardAbility(MoveAbility.Builder()
+				.WithDistance(4, new MoveCircle(this, new Vector2(0.2f, 0.3f)))
+				.Build()),
 
-						if(figure != null)
-						{
-							targetedFigures.Add(figure);
-
-							state.Performer.RemoveCoin();
-							figure.AddCoin();
-
-						}
-					}
-
-					if(targetedFigures.Count == 1)
-					{
-					}
-				})
+			new AbilityCardAbility(PullAbility.Builder()
+				.WithPull(2)
+				.WithRange(3, new RangeSquare(this, new Vector2(0.2f, 0.3f)))
+				.WithTargets(2, new TargetsSquare(this, new Vector2(0.2f, 0.3f)))
 				.Build())
 		];
 
-		public override int XP => 2;
+		public override int XP => 1;
 		public override bool Loss => true;
 	}
 }

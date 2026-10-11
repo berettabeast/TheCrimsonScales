@@ -63,30 +63,32 @@ public class ThornreaperModel : ClassModel
 
 	public override List<PerkModel> Perks { get; } =
 	[
-		ModelDB.Perk<ThornreaperPerks.RemoveTwoMinusOne>(),
+		ModelDB.Perk<ThornreaperPerks.ReplaceOneMinusOneWithOnePlusOneIfLightIsStrongOrWaning>(),
+		ModelDB.Perk<ThornreaperPerks.ReplaceOneMinusOneWithOnePlusOneIfLightIsStrongOrWaning>(),
 
-		ModelDB.Perk<ThornreaperPerks.ReplaceOneMinusTwoWithOneMinusOneGivePrayerCardAndOnePlusZero>(),
+		ModelDB.Perk<ThornreaperPerks.ReplaceOneMinusTwoWithOnePlusZero>(),
 
-		ModelDB.Perk<ThornreaperPerks.ReplaceOneMinusOneWithOnePlusZeroCurse>(),
-		ModelDB.Perk<ThornreaperPerks.ReplaceOneMinusOneWithOnePlusZeroCurse>(),
+		ModelDB.Perk<ThornreaperPerks.ReplaceOnePlusZeroWithOnePlusTwo>(),
 
-		ModelDB.Perk<ThornreaperPerks.ReplaceTwoPlusZeroWithOnePlusZeroLightRolling>(),
+		ModelDB.Perk<ThornreaperPerks.AddThreePlusOneIfLightIsStrongOrWaning>(),
+		ModelDB.Perk<ThornreaperPerks.AddThreePlusOneIfLightIsStrongOrWaning>(),
 
-		ModelDB.Perk<ThornreaperPerks.ReplaceTwoPlusZeroWithOnePlusZeroEarthRolling>(),
+		ModelDB.Perk<ThornreaperPerks.AddTwoInfuseLightRolling>(),
 
-		ModelDB.Perk<ThornreaperPerks.ReplaceOnePlusZeroWithOnePlusOneGrantOneAllyShieldOne>(),
+		ModelDB.Perk<ThornreaperPerks.AddThreeInfuseEarthIfLightIsStrongOrWaningRolling>(),
 
-		ModelDB.Perk<ThornreaperPerks.ReplaceOnePlusOneWithOnePlusThree>(),
-		ModelDB.Perk<ThornreaperPerks.ReplaceOnePlusOneWithOnePlusThree>(),
+		ModelDB.Perk<ThornreaperPerks.AddOneCreateHazardousTerrain>(),
+		ModelDB.Perk<ThornreaperPerks.AddOneCreateHazardousTerrain>(),
 
-		ModelDB.Perk<ThornreaperPerks.AddOnePlusOneWoundMuddle>(),
-		ModelDB.Perk<ThornreaperPerks.AddOnePlusOneWoundMuddle>(),
+		ModelDB.Perk<ThornreaperPerks.AddOneRetaliateThreeOnHazardousTerrainRolling>(),
+		ModelDB.Perk<ThornreaperPerks.AddOneRetaliateThreeOnHazardousTerrainRolling>(),
 
-		ModelDB.Perk<ThornreaperPerks.AddTwoPlusZeroHealOneAllyOrSelfRolling>(),
-		ModelDB.Perk<ThornreaperPerks.AddTwoPlusZeroHealOneAllyOrSelfRolling>(),
+		ModelDB.Perk<ThornreaperPerks.AddOneShieldThreeOnHazardousTerrainRolling>(),
+		ModelDB.Perk<ThornreaperPerks.AddOneShieldThreeOnHazardousTerrainRolling>(),
 
-		ModelDB.Perk<ThornreaperPerks.IgnoreScenarioEffectsRemoveOnePlusZero>(),
+		ModelDB.Perk<ThornreaperPerks.IgnoreItemEffectsAndAddOnePlusOneIfLightIsStrongOrWaningRolling>(),
 
-		ModelDB.Perk<ThornreaperPerks.GiftOfTheOak>(),
+		ModelDB.Perk<ThornreaperPerks.BrambleBulwark>(),
+		ModelDB.Perk<ThornreaperPerks.RiseAndShine>(),
 	];
 }

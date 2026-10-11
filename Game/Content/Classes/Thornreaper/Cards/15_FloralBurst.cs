@@ -4,92 +4,77 @@ using Godot;
 
 public class FloralBurst : ThornreaperLevelUpCardModel<FloralBurst.CardTop, FloralBurst.CardBottom>
 {
-	public override string Name => "Weakened Will";
+	public override string Name => "Floral Burst";
 	public override int Level => 2;
-	public override int Initiative => 17;
+	public override int Initiative => 30;
 	protected override int AtlasIndex => 29 - 15;
 
 	public class CardTop : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(AttackAbility.Builder()
-				.WithDamage(2, new AttackDiamond(this, new Vector2(0.39718983f, 0.22812192f)))
-				.WithRange(3, new RangeSquare(this, new Vector2(0.6233896f, 0.22812192f)))
-				.WithConditions(Conditions.Muddle)
-				.Build()),
-
-			new AbilityCardAbility(ConditionAbility.Builder()
+			new AbilityCardAbility(HealAbility.Builder()
+				.WithHealValue(2, new HealSquare(this, new Vector2(0.2f, 0.3f)))
+				.WithTarget(Target.SelfOrAllies | Target.TargetAll)
+				.WithRange(1)
 				.WithConditions(Conditions.Strengthen)
-				.WithCustomGetTargets((state, list) =>
-				{
-					AttackAbility.State attackAbilityState = state.ActionState.GetAbilityState<AttackAbility.State>(0);
-
-					foreach(Figure targetedFigure in attackAbilityState.UniqueTargetedFigures)
-					{
-						if(!targetedFigure.IsDead)
-						{
-							foreach(Figure figure in RangeHelper.GetFiguresInRange(targetedFigure.Hex, 1))
-							{
-								if(state.Performer.AlliedWith(figure))
-								{
-									list.AddIfNew(figure);
-								}
-							}
-						}
-					}
-				})
-				.WithConditionalAbilityCheck(state => AbilityCmd.HasPerformedAbility(state, 0))
-				.Build())
+				.Build()),
 		];
+
+		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Light)];
 	}
 
 	public class CardBottom : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
+			ConsumeEarthOrSkipAction(),
+
 			new AbilityCardAbility(MoveAbility.Builder()
-				.WithDistance(1, new MoveCircle(this, new Vector2(0.62072915f, 0.71336424f)))
-				.Build()),
-
-			new AbilityCardAbility(OtherActiveAbility.Builder()
-				.WithOnActivate(async state =>
+				.WithDistance(5)
+				.WithOnAbilityStarted(async abilityState =>
 				{
-					ScenarioEvents.AttackAfterTargetConfirmedEvent.Subscribe(state, this,
-						parameters => state.Performer.AlliedWith(parameters.AbilityState.Target),
-						async parameters =>
+					ScenarioEvents.HazardousTerrainTriggeredEvent.Subscribe(abilityState, this,
+						canApplyParameters => canApplyParameters.PotentialAbilityState?.Performer == abilityState.Performer,
+						applyParameters =>
 						{
-							parameters.AbilityState.SingleTargetSetHasDisadvantage();
-
-							await GDTask.CompletedTask;
-						}
-					);
-
-					ScenarioCheckEvents.DisadvantageCheckEvent.Subscribe(state, this,
-						parameters => state.Performer.AlliedWith(parameters.Target),
-						parameters => parameters.SetDisadvantage(true)
-					);
-
-					ScenarioCheckEvents.FigureInfoItemExtraEffectsCheckEvent.Subscribe(state, this,
-						parameters => state.Performer.AlliedWith(parameters.Figure),
-						parameters => parameters.Add(
-							new InfoTextExtraEffect.Parameters(textParameters => "All attacks targeting this figure this round gain disadvantage."))
-					);
+							applyParameters.SetAffectedByHazardousTerrain(false);
+							return GDTask.CompletedTask;
+						});
+					await GDTask.CompletedTask;
+				})
+				.WithOnAbilityEnded(async abilityState =>
+				{
+					ScenarioEvents.HazardousTerrainTriggeredEvent.Unsubscribe(abilityState, this);
 
 					await GDTask.CompletedTask;
 				})
-				.WithOnDeactivate(async state =>
-					{
-						ScenarioEvents.AttackAfterTargetConfirmedEvent.Unsubscribe(state, this);
-						ScenarioCheckEvents.DisadvantageCheckEvent.Unsubscribe(state, this);
-						ScenarioCheckEvents.FigureInfoItemExtraEffectsCheckEvent.Unsubscribe(state, this);
+				.WithConditionalAbilityCheck(abilityState => AbilityCmd.HasPerformedAbility(abilityState, 0))
+				.Build()),
 
-						await GDTask.CompletedTask;
-					}
-				)
+			new AbilityCardAbility(OtherActiveAbility.Builder()
+				.WithOnActivate(async abilityState =>
+				{
+					ScenarioEvents.DuringAttackEvent.Subscribe(abilityState, this,
+						parameters => parameters.Performer == abilityState.Performer,
+						async parameters =>
+						{
+							parameters.AbilityState.SingleTargetAdjustAttackValue(1);
+							await GDTask.CompletedTask;
+						}
+					);
+					await GDTask.CompletedTask;
+				})
+				.WithOnDeactivate(async abilityState =>
+				{
+					ScenarioEvents.DuringAttackEvent.Unsubscribe(abilityState, this);
+					await GDTask.CompletedTask;
+				})
+				.WithConditionalAbilityCheck(abilityState => AbilityCmd.HasPerformedAbility(abilityState, 0))
 				.Build())
 		];
-
 		public override bool Round => true;
+		public override int XP => 1;
+
 	}
 }

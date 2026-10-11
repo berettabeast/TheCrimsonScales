@@ -25,16 +25,18 @@ public class DawnsGift : ThornreaperCardModel<DawnsGift.CardTop, DawnsGift.CardB
 							foreach (Hex possibleHex in RangeHelper.GetHexesInRange(abilityState.Performer.Hex, 1, true))
 							{
 								if (possibleHex != null && possibleHex.IsFeatureless())
-								list.Add(possibleHex);
+								{
+									list.Add(possibleHex);
+								}
 							}
 						},
 					false, "Create one 1-hex hazardous terrain in one adjacent featureless hex");
 					if (selectedHex != null)
 					{
-						await CreateHazardousTerrain(selectedHex);
+						await CreateHazardousTerrain(selectedHex, abilityState.Performer);
 					}
 
-					if (GameController.Instance.ElementManager.GetState(Element.Light) is ElementState.Waning or ElementState.Strong)
+					if (GetLightElementState() is ElementState.Waning or ElementState.Strong)
 					{
 						ScenarioEvents.AbilityStartedEvent.Subscribe(abilityState, this, parameters => parameters.Performer == abilityState.Performer,
 						async parameters =>
