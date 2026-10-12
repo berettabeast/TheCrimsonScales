@@ -40,7 +40,7 @@ public class Obliterate : HollowpactLevelUpCardModel<Obliterate.CardTop, Obliter
 						        .Select(figure => figure.Hex)
 						        .Where(hex => hex.IsFeatureless()))
 					{
-						await AbilityCmd.CreateObstacle(hex, "res://Content/Classes/Hollowpact/VoidPit.tscn");
+						await AbilityCmd.TryCreateObstacle(hex, "res://Content/Classes/Hollowpact/VoidPit.tscn");
 					}
 				})
 				.Build()),
