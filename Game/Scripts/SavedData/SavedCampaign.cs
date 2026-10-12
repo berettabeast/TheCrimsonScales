@@ -429,7 +429,8 @@ public class SavedCampaign
 				ModelDB.Class<ChainguardModel>(),
 				ModelDB.Class<ChieftainModel>(),
 				ModelDB.Class<FireKnightModel>(),
-				ModelDB.Class<HierophantModel>()
+				ModelDB.Class<HierophantModel>(),
+				ModelDB.Class<ThornreaperModel>()
 			],
 			StartingGroup.Explorers =>
 			[
