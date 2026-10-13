@@ -1,118 +1,57 @@
 using System.Collections.Generic;
+using System.Linq;
 using Fractural.Tasks;
+using Godot;
 
 public class RavagedEarth : ThornreaperLevelUpCardModel<RavagedEarth.CardTop, RavagedEarth.CardBottom>
 {
-	public override string Name => "Expansive Permanence";
+	public override string Name => "Ravaged Earth";
 	public override int Level => 9;
-	public override int Initiative => 09;
+	public override int Initiative => 86;
 	protected override int AtlasIndex => 29 - 29;
 
 	public class CardTop : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(GrantAbility.Builder()
-				.WithGetAbilities(grantAbilityState =>
-					[
-						ShieldAbility.Builder()
-							.WithShieldValue(2)
-							.WithAbilityStartedSubscription(
-								ScenarioEvents.AbilityStarted.Subscription.ConsumeElement(Element.Earth,
-									canApplyParameters => true,
-									async applyParameters =>
-									{
-										((ShieldAbility.State)applyParameters.AbilityState).AdjustAdditionalShield(1);
+			ConsumeEarthOrSkipAction(),
 
-										await AbilityCmd.AddCondition(null, applyParameters.Performer, Conditions.Immobilize);
-										await AbilityCmd.GainXP(grantAbilityState.Performer, 1);
-									},
-									effectInfoViewParameters: new TextEffectInfoView.Parameters(
-										$"+1{Icons.Inline(Icons.Shield)}, gain {Icons.Inline(Icons.GetCondition(Conditions.Immobilize))}"))
-							)
-							.WithOnAbilityEndedPerformed(async shieldAbilityState =>
-							{
-								ScenarioEvents.AbilityStartedEvent.Subscribe(shieldAbilityState, this,
-									parameters => parameters.Performer == shieldAbilityState.Performer &&
-									              parameters.AbilityState is AttackAbility.State attackAbilityState &&
-									              attackAbilityState.IsSingleTarget,
-									async parameters =>
-									{
-										((AttackAbility.State)parameters.AbilityState).AbilityAdjustRange(100);
-										await GDTask.CompletedTask;
-									});
-								ScenarioEvents.RoundEndedEvent.Subscribe(shieldAbilityState, this,
-									parameters => true,
-									async parameters =>
-									{
-										ScenarioEvents.AbilityStartedEvent.Unsubscribe(shieldAbilityState, this);
-										ScenarioEvents.RoundEndedEvent.Unsubscribe(shieldAbilityState, this);
-										await GDTask.CompletedTask;
-									});
-								await GDTask.CompletedTask;
-							})
-							.Build(),
-						OtherActiveAbility.Builder()
-							.WithOnActivate(async state =>
-							{
-								ScenarioEvents.AbilityStartedEvent.Subscribe(state, this,
-									parameters =>
-										parameters.Performer == state.Performer &&
-										parameters.AbilityState is AttackAbility.State attackAbilityState &&
-										attackAbilityState.IsSingleTarget,
-									async parameters =>
-									{
-										((AttackAbility.State)parameters.AbilityState).AbilityAdjustRange(100);
-										await GDTask.CompletedTask;
-									});
-								await GDTask.CompletedTask;
-							})
-							.WithOnDeactivate(async state =>
-							{
-								ScenarioEvents.AbilityStartedEvent.Unsubscribe(state, this);
-								await GDTask.CompletedTask;
-							})
-							.Build()
-					]
-				)
-				.WithRange(3)
-				.WithTarget(Target.SelfOrAllies)
+			new AbilityCardAbility(AttackAbility.Builder()
+				.WithDamage(5, new AttackSquare(this, new Vector2(0.2f, 0.3f)))
+				.WithConditions(Conditions.Muddle)
+				.WithAOEPattern(new AOEPattern([
+					new AOEHex(Vector2I.Zero, AOEHexType.Gray),
+					new AOEHex(Vector2I.Zero.Add(Direction.West), AOEHexType.Red),
+					new AOEHex(Vector2I.Zero.Add(Direction.NorthWest), AOEHexType.Red),
+					new AOEHex(Vector2I.Zero.Add(Direction.NorthWest).Add(Direction.NorthWest), AOEHexType.Red),
+					new AOEHex(Vector2I.Zero.Add(Direction.NorthEast), AOEHexType.Red),
+					new AOEHex(Vector2I.Zero.Add(Direction.East), AOEHexType.Red),
+					new AOEHex(Vector2I.Zero.Add(Direction.East).Add(Direction.NorthEast), AOEHexType.Red),
+					new AOEHex(Vector2I.Zero.Add(Direction.East).Add(Direction.SouthEast), AOEHexType.Red),
+				]))
+				.WithConditionalAbilityCheck(async state => await AbilityCmd.HasPerformedAbility(state, 0))
 				.Build())
 		];
 
-		public override bool Round => true;
+		public override int XP => 1;
 	}
 
 	public class CardBottom : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(OtherActiveAbility.Builder()
-				.WithOnActivate(async state =>
-				{
-					ScenarioEvents.AbilityStartedEvent.Subscribe(state, this,
-						parameters => parameters.AbilityState is AttackAbility.State &&
-						              (parameters.AbilityState.Performer.AlliedWith(state.Performer) ||
-						               parameters.AbilityState.Performer.EnemiesWith(state.Performer)),
-						async parameters =>
-						{
-							((AttackAbility.State)parameters.AbilityState).AbilityAdjustAttackValue(
-								parameters.AbilityState.Performer.AlliedWith(state.Performer) ? 2 : -2);
-							await GDTask.CompletedTask;
-						});
-					await GDTask.CompletedTask;
-				})
-				.WithOnDeactivate(async state =>
-				{
-					ScenarioEvents.AbilityStartedEvent.Unsubscribe(state, this);
-					await GDTask.CompletedTask;
-				})
+			new AbilityCardAbility(MoveAbility.Builder()
+				.WithDistance(5, new MoveCircle(this, new Vector2(0.2f, 0.3f)))
+				.WithMoveType(MoveType.Jump)
+				.Build()),
+
+			new AbilityCardAbility(SufferDamageAbility.Builder()
+				.WithDamage(1)
+				.WithTarget(Target.Enemies | Target.TargetAll)
+				.WithRange(1)
 				.Build())
 		];
 
 		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Earth)];
-		public override int XP => 2;
-		public override bool Round => true;
-		public override bool Loss => true;
 	}
 }
