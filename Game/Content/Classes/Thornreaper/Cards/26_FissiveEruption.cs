@@ -1,99 +1,81 @@
 using System.Collections.Generic;
+using System.Linq;
 using Fractural.Tasks;
+using Godot;
 
 public class FissiveEruption : ThornreaperLevelUpCardModel<FissiveEruption.CardTop, FissiveEruption.CardBottom>
 {
-	public override string Name => "Symphony of Oppression";
+	public override string Name => "Fissive Eruption";
 	public override int Level => 8;
-	public override int Initiative => 86;
+	public override int Initiative => 40;
 	protected override int AtlasIndex => 29 - 26;
 
 	public class CardTop : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(GrantAbility.Builder()
-				.WithGetAbilities(grantAbilityState =>
-				[
-					AttackAbility.Builder()
-						.WithDamage(3)
-						.WithRange(3)
-						.WithOnAbilityStarted(async state =>
-						{
-							if(grantAbilityState.GetCustomValue<bool>(this, "TargetOneAlly"))
-							{
-								state.AbilityAdjustAttackValue(1);
-							}
-							else if(grantAbilityState.GrantAbilityActionStates.Count > 1)
-							{
-								state.SetAbilityFilterTargets((attackAbilityState, figure) =>
-									grantAbilityState.GrantAbilityActionStates[0].GetAbilityState<AttackAbility.State>(0).Target == figure);
-							}
+			ConsumeEarthOrSkipAction(),
 
-							await GDTask.CompletedTask;
-						})
-						.Build(),
-				])
-				.WithAbilityStartedSubscription(
-					ScenarioEvents.AbilityStarted.Subscription.New(
-						parameters => true,
-						async parameters =>
-						{
-							parameters.AbilityState.SetCustomValue(this, "TargetOneAlly", true);
-							((GrantAbility.State)parameters.AbilityState).AdjustTargets(-1);
-							await GDTask.CompletedTask;
-						}, EffectType.Selectable,
-						effectButtonParameters: new IconEffectButton.Parameters(Icons.Attack),
-						effectInfoViewParameters: new TextEffectInfoView.Parameters(
-							$"Target only one ally for +1{Icons.Inline(Icons.Attack)}, give that ally a Prayer card")
-					)
-				)
-				.WithOnAbilityEndedPerformed(async grantAbilityState =>
+			new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
 				{
-					if(grantAbilityState.GetCustomValue<bool>(this, "TargetOneAlly"))
+					List<Hex> selected = await AbilityCmd.SelectHexes(state, list =>
 					{
+						foreach (Hex hex in RangeHelper.GetHexesInRange(state.Performer.Hex, 4, true, true))
+						{
+							if (hex != null && hex.IsFeatureless())
+								list.Add(hex);
+						}
+					}, 0, 2, true, "Create hazardous terrain in two featureless hexes within four hexes");
+
+					foreach (Hex hex in selected)
+					{
+						await CreateHazardousTerrain(hex, state.Performer);
 					}
+					var attack = new AttackAbility.AttackBuilder()
+							.WithDamage(4, new AttackSquare(this, new Vector2(0.2f, 0.3f)))
+							.WithCustomGetTargets((state, list) =>
+							{
+								foreach (Hex hex in selected)
+								{
+									foreach (Figure figure in RangeHelper.GetFiguresInRange(hex, 0, true, true))
+									{
+										list.Add(figure);
+									}
+								}
+							})
+							.Build();
+					await attack.Perform(state.ActionState);
+					state.SetPerformed();
 				})
-				.WithTargets(2)
-				.Build()),
+				.Build())
 		];
+
+		public override int XP => 1;
 	}
 
 	public class CardBottom : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(OtherActiveAbility.Builder()
-				.WithOnActivate(async state =>
-				{
-					ScenarioEvents.AbilityStartedEvent.Subscribe(state, this,
-						parameters => parameters.AbilityState.Performer.AlliedWith(state.Performer) &&
-						              (parameters.AbilityState is ShieldAbility.State || parameters.AbilityState is RetaliateAbility.State),
-						async parameters =>
-						{
-							if(parameters.AbilityState is ShieldAbility.State shieldAbilityState)
-							{
-								shieldAbilityState.AdjustAdditionalShield(1);
-							}
-							else if(parameters.AbilityState is RetaliateAbility.State retaliateAbilityState)
-							{
-								retaliateAbilityState.AdjustRetaliateValue(1);
-							}
-
-							await GDTask.CompletedTask;
-						});
-					await GDTask.CompletedTask;
-				})
-				.WithOnDeactivate(async state =>
-				{
-					ScenarioEvents.AbilityStartedEvent.Unsubscribe(state, this);
-					await GDTask.CompletedTask;
-				})
+			new AbilityCardAbility(MoveAbility.Builder()
+				.WithDistance(4, new MoveSquare(this, new Vector2(0.2f, 0.3f)))
+				.WithMoveType(MoveType.Jump)
 				.Build()),
+
+			new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
+				{
+					Hex hex = state.Performer.Hex;
+					if (hex.IsFeatureless())
+					{
+						await CreateHazardousTerrain(hex, state.Performer);
+						state.SetPerformed();
+					}
+				})
+				.Build())
 		];
 
-		public override int XP => 2;
-		public override bool Round => true;
-		public override bool Loss => true;
+		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Light)];
 	}
 }
