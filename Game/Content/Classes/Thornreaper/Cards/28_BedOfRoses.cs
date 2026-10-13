@@ -54,6 +54,7 @@ public class BedOfRoses : ThornreaperLevelUpCardModel<BedOfRoses.CardTop, BedOfR
 						async parameters =>
 							{
 								await AbilityCmd.KillOrExhaust(parameters.Figure, state.Performer);
+								await state.AdvanceUseSlot();
 							});
 					await GDTask.CompletedTask;
 				})
