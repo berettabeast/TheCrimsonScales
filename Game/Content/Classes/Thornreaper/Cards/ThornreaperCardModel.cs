@@ -38,7 +38,19 @@ public abstract class ThornreaperCardSide : AbilityCardSideModel<Thornreaper>
 
 	protected AbilityCardAbility ConsumeEarthOrSkipAction()
 	{
-		return new AbilityCardAbility(OtherAbility.Builder()
+		if (Thornreaper.GetIgnoreEarthConsume())
+		{
+			return new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
+				{
+					Thornreaper.SetIgnoreEarthConsume(false);
+					state.SetPerformed();
+				})
+				.Build());
+		}
+		else
+		{
+			return new AbilityCardAbility(OtherAbility.Builder()
 				.WithPerformAbility(async state =>
 				{
 					ConfirmPrompt.Answer answer = null;
@@ -54,6 +66,7 @@ public abstract class ThornreaperCardSide : AbilityCardSideModel<Thornreaper>
 					}
 				})
 				.Build());
+		}
 	}
 
 	protected ElementState GetEarthElementState()
