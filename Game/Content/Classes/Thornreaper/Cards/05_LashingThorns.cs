@@ -47,11 +47,11 @@ public class LashingThorns : ThornreaperCardModel<LashingThorns.CardTop, Lashing
 					{
 						if (GetLightElementState() is ElementState.Strong or ElementState.Waning)
 						{
-							return $"{Icons.HintText(Icons.Attack)}3";
+							return $"Select a target for {Icons.HintText(Icons.Attack)}3";
 						}
 						else
 						{
-							return $"{Icons.HintText(Icons.Attack)}2";
+							return $"Select a target for {Icons.HintText(Icons.Attack)}2";
 						}
 					})
 				.Build())
