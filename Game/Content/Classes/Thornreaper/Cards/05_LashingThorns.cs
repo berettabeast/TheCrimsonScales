@@ -40,12 +40,13 @@ public class LashingThorns : ThornreaperCardModel<LashingThorns.CardTop, Lashing
 						{
 							await AbilityCmd.GainXP(parameters.Performer, 1);
 							await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light);
+							parameters.AbilityState.SetCustomValue(this, "TargetOnHazardous", true);
 							parameters.AbilityState.SingleTargetAdjustAttackValue(1);
 						}
 					))
 				.WithGetTargetingHintText(state =>
 					{
-						if (GetLightElementState() is ElementState.Strong or ElementState.Waning)
+						if (state.GetCustomValue<bool>(this, "TargetOnHazardous"))
 						{
 							return $"Select a target for {Icons.HintText(Icons.Attack)}3";
 						}
