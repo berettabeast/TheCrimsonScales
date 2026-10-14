@@ -141,8 +141,8 @@ public class Scenario005 : ScenarioModel
 				hasProgress: true, maxProgress: characterCount, order: -1));
 
 		_gelatinousGiantInvulnerableRule =
-			AddScenarioRule(
-				"The Gelatinous Giant is immune to all negative conditions and cannot suffer damage from any source until the infected water has been drained.");
+			AddScenarioRule(textParameters =>
+				$"The Gelatinous Giant is immune to all negative conditions and cannot suffer damage from any source until the infected water has been drained. Whenever an elite Blood Ooze is killed, remove the water tile on any hex marked {Icons.InlineMarker(Marker.Type.a, textParameters)} and all connected water tiles. This counts as draining the infected water. Water tiles can not be removed from the board by any other means.");
 
 		_spawnEliteBloodOozeRule =
 			AddScenarioRule(

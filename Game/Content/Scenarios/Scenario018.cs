@@ -24,12 +24,7 @@ public class Scenario018 : ScenarioModel
 		protected override void EnhancementBoughtApplyFunction(BetweenScenariosEvents.EnhancementBought.Parameters parameters)
 		{
 			int costAdjustment = parameters.BaseCost - parameters.Cost;
-			SetCustomValue(parameters.Buyer.Guid.ToString(), int.Min(100, GetCustomValue<int>(parameters.Buyer.Guid.ToString() + costAdjustment)));
-
-			// if(parameters.EnhancementModel is IPlusOneEnhancement && parameters.SavedAbilityCard.Model.Level == 1)
-			// {
-			// 	Complete();
-			// }
+			SetCustomValue(parameters.Buyer.Guid.ToString(), int.Min(100, GetCustomValue<int>(parameters.Buyer.Guid.ToString()) + costAdjustment));
 		}
 	}
 
