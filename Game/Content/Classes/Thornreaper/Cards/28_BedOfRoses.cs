@@ -1,81 +1,80 @@
 using System.Collections.Generic;
-using System.Linq;
 using Fractural.Tasks;
 using Godot;
 
 public class BedOfRoses : ThornreaperLevelUpCardModel<BedOfRoses.CardTop, BedOfRoses.CardBottom>
 {
-	public override string Name => "Vengeful Veneration";
+	public override string Name => "Bed of Roses";
 	public override int Level => 9;
-	public override int Initiative => 78;
-	protected override int AtlasIndex => 29 - 28;
+	public override int Initiative => 10;
+	protected override int AtlasIndex => 28;
 
 	public class CardTop : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(AttackAbility.Builder()
-				.WithDamage(4, new AttackDiamond(this, new Vector2(0.44721872f, 0.19194041f)))
-				.WithRange(4, new RangeSquare(this, new Vector2(0.6708979f, 0.19194041f)))
+			new AbilityCardAbility(RetaliateAbility.Builder()
+				.WithRetaliateValue(4, new RetaliateDiamondPlus(this, new Vector2(0.2f, 0.3f)))
+				.Build()),
+
+			new AbilityCardAbility(ShieldAbility.Builder()
+				.WithShieldValue(2, new ShieldDiamondPlus(this, new Vector2(0.2f, 0.3f)))
 				.Build()),
 
 			new AbilityCardAbility(OtherActiveAbility.Builder()
 				.WithOnActivate(async state =>
 				{
-					Figure figure = state.ActionState.GetAbilityState<AttackAbility.State>(0).Target;
-
-					state.SetCustomValue(this, "Figure", figure);
-
-					await AbilityCmd.AddCharacterToken(state, figure, textParameters =>
-						$"The next time this enemy attacks an ally this round, the enemy suffers {Icons.Inline(Icons.Damage)}2.");
-
-					ScenarioEvents.AfterAttackPerformedEvent.Subscribe(state, this,
-						canApplyParameters =>
-							canApplyParameters.Performer == figure &&
-							canApplyParameters.AbilityState.Target.AlliedWith(state.Performer),
-						async applyParameters =>
-						{
-							await AbilityCmd.SufferDamage(state, figure, 2);
-
-							await state.ActionState.RequestDiscardOrLose();
-						});
-
+					state.SetPerformed();
 					await GDTask.CompletedTask;
 				})
 				.WithOnDeactivate(async state =>
 				{
-					ScenarioEvents.AfterAttackPerformedEvent.Unsubscribe(state, this);
-
-					await AbilityCmd.RemoveCharacterToken(state, state.GetCustomValue<Figure>(this, "Figure"));
-
-					await GDTask.CompletedTask;
+					if (state.Performer.Hex.IsFeatureless())
+					{
+						await CreateHazardousTerrain(state.Performer.Hex, state.Performer);
+					}
 				})
-				.WithConditionalAbilityCheck(state => AbilityCmd.HasPerformedAbility(state, 0))
 				.Build())
 		];
 
 		public override bool Round => true;
+		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Light)];
 	}
 
 	public class CardBottom : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(MoveAbility.Builder()
-				.WithDistance(3, new MoveCircle(this, new Vector2(0.61960894f, 0.69351536f)))
-				.Build()),
-			new AbilityCardAbility(OtherAbility.Builder()
-				.WithPerformAbility(async state =>
+			new AbilityCardAbility(UseSlotAbility.Builder()
+				.WithOnActivate(async state =>
 				{
-					List<Figure> figures = RangeHelper.GetFiguresInRange(state.Performer.Hex, 1).Where(figure => figure.EnemiesWith(state.Performer))
-						.ToList();
-					foreach(Figure figure in figures)
-					{
-						await AbilityCmd.SufferDamage(state, figure, (figures.Count == 1) ? 2 : 1);
-						state.SetPerformed();
-					}
+					ScenarioEvents.HazardousTerrainTriggeredEvent.Subscribe(state, this,
+						parameters => parameters.Figure.EnemiesWith(state.Performer) &&
+						parameters.Figure.Health <= 5,
+						async parameters =>
+							{
+								await AbilityCmd.KillOrExhaust(parameters.Figure, state.Performer);
+								await state.AdvanceUseSlot();
+							});
+					await GDTask.CompletedTask;
 				})
+				.WithOnDeactivate(async state =>
+				{
+					ScenarioEvents.SufferDamageEvent.Unsubscribe(state, this);
+					await GDTask.CompletedTask;
+				})
+				.WithUseSlots([
+					new UseSlot(new Vector2(0.2869934f, 0.3959994f)),
+					new UseSlot(new Vector2(0.5f, 0.3959994f), GainXP),
+					new UseSlot(new Vector2(0.7025001f, 0.3959994f)),
+					new UseSlot(new Vector2(0.5f, 0.3959994f), GainXP),
+					new UseSlot(new Vector2(0.7025001f, 0.3959994f)),
+					new UseSlot(new Vector2(0.5f, 0.3959994f), GainXP),
+				])
 				.Build())
 		];
+
+		public override bool Loss => true;
+		public override bool Persistent => true;
 	}
 }

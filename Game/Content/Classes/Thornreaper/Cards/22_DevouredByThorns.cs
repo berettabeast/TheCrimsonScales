@@ -1,106 +1,65 @@
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using Fractural.Tasks;
 using Godot;
 
 public class DevouredByThorns : ThornreaperLevelUpCardModel<DevouredByThorns.CardTop, DevouredByThorns.CardBottom>
 {
-	public override string Name => "Spiritual Gains";
+	public override string Name => "Devoured by Thorns";
 	public override int Level => 6;
-	public override int Initiative => 94;
-	protected override int AtlasIndex => 29 - 22;
+	public override int Initiative => 72;
+	protected override int AtlasIndex => 23;
 
 	public class CardTop : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(OtherActiveAbility.Builder()
-				.WithOnActivate(async state =>
-				{
-					int characterTokens = 0;
-					//TODO: Add visual for character tokens
-					ScenarioEvents.AbilityCardSideEndedEvent.Subscribe(state, this,
-						parameters => parameters.Performer == state.Performer &&
-						              parameters.AbilityCardSide.AbilityCard.CardState.IsLoss() &&
-						              parameters.AbilityCardSide.Model != this,
-						async parameters =>
-						{
-							characterTokens++;
-							await GDTask.CompletedTask;
-						});
+			ConsumeEarthOrSkipAction(),
 
-					ScenarioEvents.LongRestStartedEvent.Subscribe(state, this,
-						parameters => parameters.Character == state.Performer && characterTokens > 0,
-						async parameters =>
-						{
-							parameters.SetLoseCard(false);
-							characterTokens--;
-							await GDTask.CompletedTask;
-						}, EffectType.Selectable,
-						effectButtonParameters: new IconEffectButton.Parameters(Icons.LoseCard),
-						effectInfoViewParameters: new AbilityCardEffectInfoView.Parameters(GetAbilityCardSide(state)));
-
-					await GDTask.CompletedTask;
-				})
-				.WithOnDeactivate(async state =>
-				{
-					ScenarioEvents.AbilityCardSideEndedEvent.Unsubscribe(state, this);
-					ScenarioEvents.LongRestStartedEvent.Unsubscribe(state, this);
-
-					await GDTask.CompletedTask;
-				})
+			new AbilityCardAbility(AttackAbility.Builder()
+				.WithDamage(2, new AttackSquare(this, new Vector2(0.2f, 0.3f)))
+				.WithRange(3, new RangeSquare(this, new Vector2(0.2f, 0.3f)))
+				.WithTargets(3)
+				.WithPull(2)
+				.WithConditionalAbilityCheck(state => AbilityCmd.HasPerformedAbility(state, 0))
 				.Build())
 		];
 
-		public override bool Persistent => true;
-		public override bool Loss => true;
+		public override int XP => 1;
 	}
 
 	public class CardBottom : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(MoveAbility.Builder()
-				.WithDistance(5, new MoveCircle(this, new Vector2(0.619969f, 0.62733525f)))
-				.Build()),
-			new AbilityCardAbility(UseSlotAbility.Builder()
-				.WithOnActivate(async state =>
+			new AbilityCardAbility(PullAbility.Builder()
+				.WithPull(2)
+				.WithCustomGetTargets(async (state, list) =>
 				{
-					ScenarioEvents.ShortRestStartedEvent.Subscribe(state, this,
-						canApplyParameters => canApplyParameters.Character == state.Performer,
+					Hex hex = await AbilityCmd.SelectHex(state,
+						validTerrain => RangeHelper.GetOverlayTilesInRange<HazardousTerrain>(state.Performer.Hex, RangeHelper.InfiniteRange, true, true), true, "Select a hazardous terrain tile:");
+
+					state.SetCustomValue(this, "SelectedHex", hex);
+					
+					foreach (Figure figure in RangeHelper.GetFiguresInRange(hex, 2, true, false))
+					{
+						list.Add(figure);
+					}
+				})
+				.WithCustomGetPerformHex(performHex => performHex.GetCustomValue<Hex>(this, "SelectedHex"))
+				.WithOnAbilityEnded(async pullAbilityState =>
+				{
+					ScenarioEvents.FigureKilledEvent.Subscribe(pullAbilityState, this,
+						parameters => true,
 						async applyParameters =>
-						{
-							applyParameters.SetLoseCard(false);
-							foreach(ItemModel item in applyParameters.Character.Items.Where(item => item.ItemUseType == ItemUseType.Spend))
 							{
-								await AbilityCmd.RefreshItem(item);
-							}
-
-							ActionState actionState = new ActionState(applyParameters.Character,
-							[
-								HealAbility.Builder()
-									.WithHealValue(7)
-									.WithTarget(Target.Self)
-									.WithConditions(Conditions.Invisible)
-									.Build()
-							]);
-							await actionState.Perform();
-							await state.AdvanceUseSlot();
-						});
-
+								await AbilityCmd.LootHex(pullAbilityState.Performer, applyParameters.Figure.Hex);
+								await AbilityCmd.GainXP(pullAbilityState.Performer, 1);
+							});
 					await GDTask.CompletedTask;
 				})
-				.WithOnDeactivate(async state =>
-				{
-					ScenarioEvents.AttackAfterTargetConfirmedEvent.Unsubscribe(state, this);
-
-					await GDTask.CompletedTask;
-				})
-				.WithUseSlot(new UseSlot(new Vector2(0.48200023f, 0.90800273f), GainXP))
 				.Build())
 		];
-
-		public override bool Persistent => true;
-		public override bool Loss => true;
 	}
 }

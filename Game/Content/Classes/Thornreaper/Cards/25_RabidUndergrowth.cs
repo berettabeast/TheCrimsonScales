@@ -1,80 +1,101 @@
 using System.Collections.Generic;
-using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using Fractural.Tasks;
 using Godot;
 
 public class RabidUndergrowth : ThornreaperLevelUpCardModel<RabidUndergrowth.CardTop, RabidUndergrowth.CardBottom>
 {
-	public override string Name => "Revered Protector";
+	public override string Name => "Rabid Undergrowth";
 	public override int Level => 7;
-	public override int Initiative => 15;
-	protected override int AtlasIndex => 29 - 25;
+	public override int Initiative => 27;
+	protected override int AtlasIndex => 24;
 
 	public class CardTop : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(UseSlotAbility.Builder()
-				.WithOnActivate(async state =>
-				{
-					ScenarioEvents.SufferDamageEvent.Subscribe(state, this,
-						canApplyParameters => canApplyParameters.FromAttack &&
-						                      ((AttackAbility.State)canApplyParameters.PotentialAbilityState).Target
-						                      .AlliedWith(state.Performer, true) &&
-						                      RangeHelper.Distance(((AttackAbility.State)canApplyParameters.PotentialAbilityState).Target.Hex,
-							                      state.Performer.Hex) <= 1,
-						async applyParameters =>
+			ConsumeEarthOrSkipAction(),
+
+			new AbilityCardAbility(AttackAbility.Builder()
+				.WithDamage(3, new AttackSquare(this, new Vector2(0.2f, 0.3f)))
+				.WithRange(3)
+				.WithPierce(2)
+				.WithAOEPattern(new AOEPattern([
+					new AOEHex(Vector2I.Zero, AOEHexType.Red),
+					new AOEHex(Vector2I.Zero.Add(Direction.NorthEast), AOEHexType.Red),
+					new AOEHex(Vector2I.Zero.Add(Direction.East), AOEHexType.Red),
+					new AOEHex(Vector2I.Zero.Add(Direction.East).Add(Direction.East), AOEHexType.Red),
+					new AOEHex(Vector2I.Zero.Add(Direction.East).Add(Direction.East).Add(Direction.NorthEast), AOEHexType.Red),
+				]))
+				.WithAfterAttackPerformedSubscription(
+					ScenarioEvents.AfterAttackPerformed.Subscription.New(
+						applyFunction: async applyParameters =>
 						{
-							int shieldVal = state.UseSlotIndex switch
+							var redHexes = applyParameters.AbilityState.GetRedAOEHexes();
+							if (redHexes == null)
 							{
-								0 => 1,
-								1 => 2,
-								2 or 3 => 3,
-								4 => 4,
-								_ => 0
-							};
-							applyParameters.AdjustShield(shieldVal);
-							await state.AdvanceUseSlot();
+								return;
+							}
+
+							foreach (Hex hex in redHexes)
+							{
+								if (hex != null && hex.IsFeatureless())
+								{
+									await CreateHazardousTerrain(hex, applyParameters.Performer);
+								}
+							}
 						}
-					);
-
-					await GDTask.CompletedTask;
-				})
-				.WithOnDeactivate(async state =>
-					{
-						ScenarioEvents.AfterSufferDamageEvent.Unsubscribe(state, this);
-
-						await GDTask.CompletedTask;
-					}
-				)
-				.WithUseSlots(
-					[
-						new UseSlot(new Vector2(0.2825028f, 0.31599984f)),
-						new UseSlot(new Vector2(0.48800266f, 0.31599984f)),
-						new UseSlot(new Vector2(0.6910024f, 0.31599984f)),
-						new UseSlot(new Vector2(0.37300277f, 0.43199965f)),
-						new UseSlot(new Vector2(0.57800215f, 0.43199965f))
-					]
+					)
 				)
 				.Build())
 		];
 
-		public override bool Round => true;
+		public override int XP => 2;
+		public override bool Loss => true;
 	}
 
 	public class CardBottom : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(MoveAbility.Builder()
-				.WithDistance(4)
-				.WithMoveType(MoveType.Jump)
-				.WithOnAbilityEndedPerformed(async state =>
+			new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
 				{
-					foreach(Figure figure in state.Hexes
-						        .SelectMany(hex => hex.GetHexObjectsOfType<Figure>().Where(figure => figure.AlliedWith(state.Performer))).Distinct())
+					if (GetLightElementState() is ElementState.Strong or ElementState.Waning)
 					{
-						await AbilityCmd.RemoveOneNegativeCondition(null, figure);
+						await AbilityCmd.InfuseElement(state, Element.Earth);
+					}
+					state.SetPerformed();
+				})
+				.Build()),
+
+			new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
+				{
+					Hex selected = await AbilityCmd.SelectHex(state, list =>
+					{
+						foreach (Hex hex in RangeHelper.GetHexesInRange(state.Performer.Hex, 1, true))
+						{
+							if (hex != null && hex.IsFeatureless())
+								list.Add(hex);
+						}
+					}, false, "Create hazardous terrain in one adjacent featureless hex");
+
+					if (selected != null)
+					{
+						await CreateHazardousTerrain(selected, state.Performer);
+						var attack = new AttackAbility.AttackBuilder()
+							.WithDamage(3, new AttackSquare(this, new Vector2(0.2f, 0.3f)))
+							.WithCustomGetTargets((state, list) =>
+							{
+								foreach (Figure figure in RangeHelper.GetFiguresInRange(selected, 1, true, true))
+								{
+									list.Add(figure);
+								}
+							})
+							.Build();
+						await attack.Perform(state.ActionState);
+						state.SetPerformed();
 					}
 				})
 				.Build()),

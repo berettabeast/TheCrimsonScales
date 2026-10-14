@@ -9,7 +9,7 @@ public class BranchedSlam : ThornreaperLevelUpCardModel<BranchedSlam.CardTop, Br
 	public override string Name => "Branched Slam";
 	public override int Level => 5;
 	public override int Initiative => 45;
-	protected override int AtlasIndex => 29 - 21;
+	protected override int AtlasIndex => 21;
 
 	public class CardTop : ThornreaperCardSide
 	{

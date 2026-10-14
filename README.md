@@ -37,8 +37,9 @@ The Crimson Scales was created by various creators. The creators whose contribut
 - Nerdhaven
 
 The game also contains custom content contributions from the following creators:
-- Satire Gaming
+- Argus
 - General CGO
+- Nerdhaven
 
 The Music and Sound Effects are the property of various artists, including but not limited to:
 - thomas devlin

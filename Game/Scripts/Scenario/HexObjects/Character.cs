@@ -128,9 +128,6 @@ public partial class Character : Figure
 			}
 		}
 
-		// inserting bruiser amd for testing
-		_amdCardDeck.DrawPile.Insert(20, new AMDCard(ModelDB.AMDCard<BruiserAMDCards.PlusZeroRetaliateOneRolling>(), amdCardOwner, potentialDeckOwner: this));
-
 		PlayableAbilityCardCount = 2;
 
 		FigureViewComponent.TurnStartPS.SetSelfModulate(OutlineColor);

@@ -8,8 +8,8 @@ public abstract class ThornreaperLevelUpCardModel<TTop, TBottom> : AbilityCardMo
 	where TBottom : ThornreaperCardSide
 {
 	protected override string TexturePath => "res://Content/Classes/Thornreaper/Cards.jpg";
-	protected override int ColumnCount => 8;
-	protected override int RowCount => 4;
+	protected override int ColumnCount => 7;
+	protected override int RowCount => 5;
 }
 
 public abstract class ThornreaperCardModel<TTop, TBottom> : AbilityCardModel<TTop, TBottom>
@@ -17,8 +17,8 @@ public abstract class ThornreaperCardModel<TTop, TBottom> : AbilityCardModel<TTo
 	where TBottom : ThornreaperCardSide
 {
 	protected override string TexturePath => "res://Content/Classes/Thornreaper/Cards.jpg";
-	protected override int ColumnCount => 8;
-	protected override int RowCount => 4;
+	protected override int ColumnCount => 7;
+	protected override int RowCount => 5;
 }
 
 public abstract class ThornreaperCardSide : AbilityCardSideModel<Thornreaper>
@@ -38,7 +38,19 @@ public abstract class ThornreaperCardSide : AbilityCardSideModel<Thornreaper>
 
 	protected AbilityCardAbility ConsumeEarthOrSkipAction()
 	{
-		return new AbilityCardAbility(OtherAbility.Builder()
+		if (Thornreaper.GetIgnoreEarthConsume())
+		{
+			return new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
+				{
+					Thornreaper.SetIgnoreEarthConsume(false);
+					state.SetPerformed();
+				})
+				.Build());
+		}
+		else
+		{
+			return new AbilityCardAbility(OtherAbility.Builder()
 				.WithPerformAbility(async state =>
 				{
 					ConfirmPrompt.Answer answer = null;
@@ -54,6 +66,7 @@ public abstract class ThornreaperCardSide : AbilityCardSideModel<Thornreaper>
 					}
 				})
 				.Build());
+		}
 	}
 
 	protected ElementState GetEarthElementState()

@@ -8,7 +8,7 @@ public class Thornstride : ThornreaperCardModel<Thornstride.CardTop, Thornstride
 	public override string Name => "Thornstride";
 	public override int Level => 1;
 	public override int Initiative => 24;
-	protected override int AtlasIndex => 29 - 13;
+	protected override int AtlasIndex => 12;
 
 	public class CardTop : ThornreaperCardSide
 	{
@@ -28,6 +28,7 @@ public class Thornstride : ThornreaperCardModel<Thornstride.CardTop, Thornstride
 						parameters => parameters.AbilityState.Performer.Hex.HasHexObjectOfType<HazardousTerrain>(),
 						async parameters =>
 						{
+							parameters.AbilityState.SetCustomValue(this, "OccupyingHazardous", true);
 							parameters.AbilityState.AbilityAdjustPierce(1);
 							await AbilityCmd.GainXP(parameters.Performer, 1);
 						})
@@ -37,11 +38,39 @@ public class Thornstride : ThornreaperCardModel<Thornstride.CardTop, Thornstride
 						parameters => parameters.AbilityState.Target.Hex.HasHexObjectOfType<HazardousTerrain>(),
 						async parameters =>
 						{
+							parameters.AbilityState.SetCustomValue(this, "TargetIsOnHazardous", 4);
 							parameters.AbilityState.AbilityAdjustAttackValue(1);
 							await GDTask.CompletedTask;
 						}
 					)
 				)
+				.WithGetTargetingHintText(state =>
+					{
+						if (state.GetCustomValue<bool>(this, "TargetIsOnHazardous"))
+						{
+							if (state.GetCustomValue<bool>(this, "OccupyingHazardous"))
+							{
+								return $"Select a target for {Icons.HintText(Icons.Attack)}4, {Icons.HintText(Icons.Pierce)}1";
+							}
+							else
+							{
+								return $"Select a target for {Icons.HintText(Icons.Attack)}4";
+							}
+							
+						}
+						else
+						{
+							if (state.GetCustomValue<bool>(this, "OccupyingHazardous"))
+							{
+								return $"Select a target for {Icons.HintText(Icons.Attack)}3, {Icons.HintText(Icons.Pierce)}1";
+							}
+							else
+							{
+								return $"Select a target for {Icons.HintText(Icons.Attack)}3";
+							}
+						}
+						
+					})
 				.Build())
 		];
 	}

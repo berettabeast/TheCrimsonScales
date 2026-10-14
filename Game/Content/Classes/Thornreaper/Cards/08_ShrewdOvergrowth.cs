@@ -5,10 +5,10 @@ using Godot;
 
 public class ShrewdOvergrowth : ThornreaperCardModel<ShrewdOvergrowth.CardTop, ShrewdOvergrowth.CardBottom>
 {
-	public override string Name => "Shrewd Overgrowth";
+	public override string Name => "Overgrowth";
 	public override int Level => 1;
 	public override int Initiative => 92;
-	protected override int AtlasIndex => 29 - 8;
+	protected override int AtlasIndex => 10;
 
 	public class CardTop : ThornreaperCardSide
 	{

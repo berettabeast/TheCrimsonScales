@@ -8,7 +8,7 @@ public class Photosynthesis : ThornreaperCardModel<Photosynthesis.CardTop, Photo
 	public override string Name => "Photosynthesis";
 	public override int Level => 1;
 	public override int Initiative => 35;
-	protected override int AtlasIndex => 29 - 7;
+	protected override int AtlasIndex => 3;
 
 	public class CardTop : ThornreaperCardSide
 	{

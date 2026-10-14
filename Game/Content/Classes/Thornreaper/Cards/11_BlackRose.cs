@@ -7,7 +7,7 @@ public class BlackRose : ThornreaperCardModel<BlackRose.CardTop, BlackRose.CardB
 	public override string Name => "Black Rose";
 	public override int Level => 1;
 	public override int Initiative => 12;
-	protected override int AtlasIndex => 29 - 11;
+	protected override int AtlasIndex => 11;
 
 	public class CardTop : ThornreaperCardSide
 	{
