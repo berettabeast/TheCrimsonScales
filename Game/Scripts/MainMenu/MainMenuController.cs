@@ -90,6 +90,7 @@ public partial class MainMenuController : SceneController<MainMenuController>
 		campaign.UnlockClass(ModelDB.Class<ThornreaperModel>());
 		campaign.AddCharacter(ModelDB.Class<BruiserModel>(), null, "Bruiser");
 		campaign.AddCharacter(ModelDB.Class<ThornreaperModel>(), null, "Thornreaper");
+		campaign.AddCharacter(ModelDB.Class<RefractorModel>(), null, "Refractor");
 		//SavedCharacter bruiser = campaign.Characters.LastOrDefault();
 
 		campaign.SavedScenarioProgresses.ScenarioProgresses.Clear();
