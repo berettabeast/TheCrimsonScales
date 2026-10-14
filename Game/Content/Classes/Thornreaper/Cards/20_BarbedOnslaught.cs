@@ -8,7 +8,7 @@ public class BarbedOnslaught : ThornreaperLevelUpCardModel<BarbedOnslaught.CardT
 	public override string Name => "Barbed Onslaught";
 	public override int Level => 5;
 	public override int Initiative => 58;
-	protected override int AtlasIndex => 29 - 20;
+	protected override int AtlasIndex => 20;
 
 	public class CardTop : ThornreaperCardSide
 	{

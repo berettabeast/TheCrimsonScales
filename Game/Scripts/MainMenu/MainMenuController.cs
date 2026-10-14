@@ -85,7 +85,7 @@ public partial class MainMenuController : SceneController<MainMenuController>
 
 	private void OnProvingGroundsPressed()
 	{
-		SavedCampaign campaign = SavedCampaign.New("Proving Grounds", StartingGroup.Militants);
+		SavedCampaign campaign = SavedCampaign.New("Proving Grounds", StartingGroup.Protectors);
 		campaign.UnlockClass(ModelDB.Class<BruiserModel>());
 		campaign.UnlockClass(ModelDB.Class<ThornreaperModel>());
 		campaign.AddCharacter(ModelDB.Class<BruiserModel>(), null, "Bruiser");

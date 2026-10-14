@@ -1,64 +1,98 @@
 using System.Collections.Generic;
-using System.Linq;
 using Fractural.Tasks;
 using Godot;
 
 public class NaturesFury : ThornreaperLevelUpCardModel<NaturesFury.CardTop, NaturesFury.CardBottom>
 {
-	public override string Name => "Chains of Light";
+	public override string Name => "Nature's Fury";
 	public override int Level => 7;
-	public override int Initiative => 31;
-	protected override int AtlasIndex => 29 - 24;
+	public override int Initiative => 37;
+	protected override int AtlasIndex => 25;
 
 	public class CardTop : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(PullAbility.Builder()
-				.WithPull(2)
-				.WithTargets(2)
-				.WithRange(3, new RangeSquare(this, new Vector2(0.6776391f, 0.19290696f)))
-				.Build()),
-			new AbilityCardAbility(AttackAbility.Builder()
-				.WithDamage(3)
-				.WithTarget(Target.TargetAll | Target.Enemies)
-				.WithDuringAttackSubscription(
-					ScenarioEvents.DuringAttack.Subscription.ConsumeElement(Element.Light,
-						applyFunction: async parameters =>
-						{
-							parameters.AbilityState.SingleTargetAddCondition(Conditions.Stun);
+			new AbilityCardAbility(OtherActiveAbility.Builder()
+				.WithOnActivate(async state =>
+				{
+					bool buffedThisRound = false;
 
+					ScenarioEvents.ElementInfusedEvent.Subscribe(state, this, 
+						parameters => parameters.Element == Element.Earth &&
+						parameters.PotentialInfuser == state.Performer,
+						async applyParameters =>
+						{
+							if (!buffedThisRound)
+							{
+								buffedThisRound = true;
+							}
 							await GDTask.CompletedTask;
-						},
-						effectInfoViewParameters: new TextEffectInfoView.Parameters(
-							$"Add {Icons.Inline(Icons.GetCondition((Conditions.Stun)))} to the next attack")
-					)
-				)
+						});
+
+					ScenarioEvents.AttackAfterTargetConfirmedEvent.Subscribe(state, this,
+						parameters => buffedThisRound && parameters.AbilityState.Performer == state.Performer,
+						async apply =>
+						{
+							apply.AbilityState.AbilityAdjustAttackValue(1);
+						});
+
+					ScenarioEvents.RoundEndedEvent.Subscribe(state, this, _ => true, async _ =>
+					{
+						buffedThisRound = false;
+						await GDTask.CompletedTask;
+					});
+
+					await GDTask.CompletedTask;
+				})
+				.WithOnDeactivate(async state =>
+				{
+					ScenarioEvents.ElementInfusedEvent.Unsubscribe(state, this);
+					ScenarioEvents.AttackAfterTargetConfirmedEvent.Unsubscribe(state, this);
+					ScenarioEvents.RoundEndedEvent.Unsubscribe(state, this);
+					await GDTask.CompletedTask;
+				})
 				.Build())
 		];
+
+		public override int XP => 1;
+		public override bool Loss => true;
+		public override bool Persistent => true;
 	}
 
 	public class CardBottom : ThornreaperCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(MoveAbility.Builder()
-				.WithDistance(3)
+			ConsumeEarthOrSkipAction(),
+
+			new AbilityCardAbility(AttackAbility.Builder()
+				.WithDamage(4, new AttackSquare(this, new Vector2(0.2f, 0.3f)))
+				.WithRange(4, new RangeSquare(this, new Vector2(0.2f, 0.3f)))
+				.WithPull(3, new PullSquare(this, new Vector2(0.2f, 0.3f)))
+				.WithConditionalAbilityCheck(state => AbilityCmd.HasPerformedAbility(state, 0))
 				.Build()),
 
-			new AbilityCardAbility(PushAbility.Builder()
-				.WithPush(3)
-				.WithRange(1)
-				.WithOnAbilityEndedPerformed(async state =>
+			// You may ignore any requirements to [consume Earth] on your next action this turn.
+			new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
 				{
-					foreach(Figure enemy in state.UniqueTargetedFigures
-						        .Where(enemy => RangeHelper.GetFiguresInRange(enemy.Hex, 1)
-							        .Any(f => f.AlliedWith(state.Performer))))
-					{
-						await AbilityCmd.AddCondition(state, enemy, Conditions.Immobilize);
-					}
+					Thornreaper.SetIgnoreEarthConsume(true);
+
+					ScenarioEvents.RoundEndedEvent.Subscribe(state.Performer, this,
+						_ => true,
+						async _ =>
+						{
+							Thornreaper.SetIgnoreEarthConsume(false);
+							ScenarioEvents.RoundEndedEvent.Unsubscribe(state.Performer, this);
+							await GDTask.CompletedTask;
+						});
+					state.SetPerformed();
 				})
+				.WithConditionalAbilityCheck(state => AbilityCmd.HasPerformedAbility(state, 0))
 				.Build())
 		];
+
+		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Light)];
 	}
 }

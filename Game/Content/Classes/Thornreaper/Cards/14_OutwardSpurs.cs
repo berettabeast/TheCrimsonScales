@@ -9,7 +9,7 @@ public class OutwardSpurs : ThornreaperLevelUpCardModel<OutwardSpurs.CardTop, Ou
 	public override string Name => "Outward Spurs";
 	public override int Level => 2;
 	public override int Initiative => 43;
-	protected override int AtlasIndex => 29 - 14;
+	protected override int AtlasIndex => 15;
 
 	public class CardTop : ThornreaperCardSide
 	{

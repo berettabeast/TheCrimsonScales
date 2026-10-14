@@ -8,7 +8,7 @@ public class PricklySituation : ThornreaperLevelUpCardModel<PricklySituation.Car
 	public override string Name => "Prickly Situation";
 	public override int Level => 4;
 	public override int Initiative => 20;
-	protected override int AtlasIndex => 29 - 18;
+	protected override int AtlasIndex => 18;
 
 	public class CardTop : ThornreaperCardSide
 	{

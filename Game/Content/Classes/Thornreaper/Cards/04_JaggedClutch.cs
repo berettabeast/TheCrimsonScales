@@ -7,7 +7,7 @@ public class JaggedClutch : ThornreaperCardModel<JaggedClutch.CardTop, JaggedClu
 	public override string Name => "Jagged Clutch";
 	public override int Level => 1;
 	public override int Initiative => 32;
-	protected override int AtlasIndex => 29 - 4;
+	protected override int AtlasIndex => 1;
 
 	public class CardTop : ThornreaperCardSide
 	{

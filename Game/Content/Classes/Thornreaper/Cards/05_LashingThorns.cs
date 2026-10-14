@@ -7,7 +7,7 @@ public class LashingThorns : ThornreaperCardModel<LashingThorns.CardTop, Lashing
 	public override string Name => "Lashing Thorns";
 	public override int Level => 1;
 	public override int Initiative => 39;
-	protected override int AtlasIndex => 29 - 5;
+	protected override int AtlasIndex => 4;
 
 	public class CardTop : ThornreaperCardSide
 	{
@@ -40,18 +40,19 @@ public class LashingThorns : ThornreaperCardModel<LashingThorns.CardTop, Lashing
 						{
 							await AbilityCmd.GainXP(parameters.Performer, 1);
 							await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light);
+							parameters.AbilityState.SetCustomValue(this, "TargetOnHazardous", true);
 							parameters.AbilityState.SingleTargetAdjustAttackValue(1);
 						}
 					))
 				.WithGetTargetingHintText(state =>
 					{
-						if (GetLightElementState() is ElementState.Strong or ElementState.Waning)
+						if (state.GetCustomValue<bool>(this, "TargetOnHazardous"))
 						{
-							return $"{Icons.HintText(Icons.Attack)}3";
+							return $"Select a target for {Icons.HintText(Icons.Attack)}3";
 						}
 						else
 						{
-							return $"{Icons.HintText(Icons.Attack)}2";
+							return $"Select a target for {Icons.HintText(Icons.Attack)}2";
 						}
 					})
 				.Build())
