@@ -8,7 +8,7 @@ public class RavagedEarth : ThornreaperLevelUpCardModel<RavagedEarth.CardTop, Ra
 	public override string Name => "Ravaged Earth";
 	public override int Level => 9;
 	public override int Initiative => 86;
-	protected override int AtlasIndex => 29 - 29;
+	protected override int AtlasIndex => 29;
 
 	public class CardTop : ThornreaperCardSide
 	{

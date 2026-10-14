@@ -7,7 +7,7 @@ public class BrightSkies : ThornreaperLevelUpCardModel<BrightSkies.CardTop, Brig
 	public override string Name => "Bright Skies";
 	public override int Level => 3;
 	public override int Initiative => 29;
-	protected override int AtlasIndex => 29 - 16;
+	protected override int AtlasIndex => 16;
 
 	public class CardTop : ThornreaperCardSide
 	{

@@ -10,7 +10,7 @@ public class DawnsGift : ThornreaperCardModel<DawnsGift.CardTop, DawnsGift.CardB
 	public override string Name => "Dawn's Gift";
 	public override int Level => 1;
 	public override int Initiative => 56;
-	protected override int AtlasIndex => 29 - 1;
+	protected override int AtlasIndex => 7;
 
 	public class CardTop : ThornreaperCardSide
 	{

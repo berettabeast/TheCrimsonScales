@@ -7,7 +7,7 @@ public class NaturesFury : ThornreaperLevelUpCardModel<NaturesFury.CardTop, Natu
 	public override string Name => "Nature's Fury";
 	public override int Level => 7;
 	public override int Initiative => 37;
-	protected override int AtlasIndex => 29 - 24;
+	protected override int AtlasIndex => 25;
 
 	public class CardTop : ThornreaperCardSide
 	{

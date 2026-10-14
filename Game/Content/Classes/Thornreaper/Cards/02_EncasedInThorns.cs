@@ -11,7 +11,7 @@ public class EncasedInThorns : ThornreaperCardModel<EncasedInThorns.CardTop, Enc
 	public override string Name => "Encased in Thorns";
 	public override int Level => 1;
 	public override int Initiative => 22;
-	protected override int AtlasIndex => 29 - 2;
+	protected override int AtlasIndex => 0;
 
 	public class CardTop : ThornreaperCardSide
 	{

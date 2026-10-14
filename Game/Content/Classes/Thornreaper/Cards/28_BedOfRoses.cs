@@ -7,7 +7,7 @@ public class BedOfRoses : ThornreaperLevelUpCardModel<BedOfRoses.CardTop, BedOfR
 	public override string Name => "Bed of Roses";
 	public override int Level => 9;
 	public override int Initiative => 10;
-	protected override int AtlasIndex => 29 - 28;
+	protected override int AtlasIndex => 28;
 
 	public class CardTop : ThornreaperCardSide
 	{

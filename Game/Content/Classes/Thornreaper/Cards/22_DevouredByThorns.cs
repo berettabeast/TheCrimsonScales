@@ -9,7 +9,7 @@ public class DevouredByThorns : ThornreaperLevelUpCardModel<DevouredByThorns.Car
 	public override string Name => "Devoured by Thorns";
 	public override int Level => 6;
 	public override int Initiative => 72;
-	protected override int AtlasIndex => 29 - 22;
+	protected override int AtlasIndex => 23;
 
 	public class CardTop : ThornreaperCardSide
 	{

@@ -7,7 +7,7 @@ public class CoverOfGreen : ThornreaperCardModel<CoverOfGreen.CardTop, CoverOfGr
 	public override string Name => "Cover of Green";
 	public override int Level => 1;
 	public override int Initiative => 34;
-	protected override int AtlasIndex => 29 - 0;
+	protected override int AtlasIndex => 2;
 
 	public class CardTop : ThornreaperCardSide
 	{

@@ -8,7 +8,7 @@ public class ImpalingCommand : ThornreaperLevelUpCardModel<ImpalingCommand.CardT
 	public override string Name => "Impaling Command";
 	public override int Level => 8;
 	public override int Initiative => 19;
-	protected override int AtlasIndex => 29 - 27;
+	protected override int AtlasIndex => 26;
 
 	public class CardTop : ThornreaperCardSide
 	{

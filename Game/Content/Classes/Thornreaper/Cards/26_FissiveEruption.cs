@@ -8,7 +8,7 @@ public class FissiveEruption : ThornreaperLevelUpCardModel<FissiveEruption.CardT
 	public override string Name => "Fissive Eruption";
 	public override int Level => 8;
 	public override int Initiative => 40;
-	protected override int AtlasIndex => 29 - 26;
+	protected override int AtlasIndex => 27;
 
 	public class CardTop : ThornreaperCardSide
 	{

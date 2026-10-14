@@ -7,7 +7,7 @@ public class LashingThorns : ThornreaperCardModel<LashingThorns.CardTop, Lashing
 	public override string Name => "Lashing Thorns";
 	public override int Level => 1;
 	public override int Initiative => 39;
-	protected override int AtlasIndex => 29 - 5;
+	protected override int AtlasIndex => 4;
 
 	public class CardTop : ThornreaperCardSide
 	{

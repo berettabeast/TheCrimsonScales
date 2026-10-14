@@ -7,7 +7,7 @@ public class SolarFlare : ThornreaperLevelUpCardModel<SolarFlare.CardTop, SolarF
 	public override string Name => "Solar Flare";
 	public override int Level => 6;
 	public override int Initiative => 36;
-	protected override int AtlasIndex => 29 - 23;
+	protected override int AtlasIndex => 22;
 
 	public class CardTop : ThornreaperCardSide
 	{

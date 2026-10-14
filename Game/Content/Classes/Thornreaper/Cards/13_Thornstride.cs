@@ -8,7 +8,7 @@ public class Thornstride : ThornreaperCardModel<Thornstride.CardTop, Thornstride
 	public override string Name => "Thornstride";
 	public override int Level => 1;
 	public override int Initiative => 24;
-	protected override int AtlasIndex => 29 - 13;
+	protected override int AtlasIndex => 12;
 
 	public class CardTop : ThornreaperCardSide
 	{

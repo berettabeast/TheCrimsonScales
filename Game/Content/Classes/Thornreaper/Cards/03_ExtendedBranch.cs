@@ -7,7 +7,7 @@ public class ExtendedBranch : ThornreaperCardModel<ExtendedBranch.CardTop, Exten
 	public override string Name => "Extended Branch";
 	public override int Level => 1;
 	public override int Initiative => 61;
-	protected override int AtlasIndex => 29 - 3;
+	protected override int AtlasIndex => 8;
 
 	public class CardTop : ThornreaperCardSide
 	{

@@ -8,7 +8,7 @@ public class RabidUndergrowth : ThornreaperLevelUpCardModel<RabidUndergrowth.Car
 	public override string Name => "Rabid Undergrowth";
 	public override int Level => 7;
 	public override int Initiative => 27;
-	protected override int AtlasIndex => 29 - 25;
+	protected override int AtlasIndex => 24;
 
 	public class CardTop : ThornreaperCardSide
 	{

@@ -7,7 +7,7 @@ public class SpikedEmbrace : ThornreaperCardModel<SpikedEmbrace.CardTop, SpikedE
 	public override string Name => "Spiked Embrace";
 	public override int Level => 1;
 	public override int Initiative => 31;
-	protected override int AtlasIndex => 29 - 12;
+	protected override int AtlasIndex => 13;
 
 	public class CardTop : ThornreaperCardSide
 	{
