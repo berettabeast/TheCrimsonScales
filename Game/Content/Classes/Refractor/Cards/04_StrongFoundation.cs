@@ -14,29 +14,19 @@ public class StrongFoundation : RefractorCardModel<StrongFoundation.CardTop, Str
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
 				
-			new AbilityCardAbility(AttackAbility.Builder()
-				.WithDamage(4, new AttackSquare(this, new Vector2(0.32887793f, 0.2931021f)))
-				.WithRange(3, new RangeSquare(this, new Vector2(0.55187505f, 0.2931021f)))
-				.WithPull(1)
-				.WithDuringAttackSubscription(ScenarioEvents.DuringAttack.Subscription.New(
-					pullParameters => true,
-					async pullParameters =>
-					{
-						ScenarioEvents.FigureEnteredHexEvent.Subscribe(pullParameters.AbilityState, this, 
-							enteredHexParameters => enteredHexParameters.Figure == pullParameters.AbilityState.Target &&
-													enteredHexParameters.Hex.HasHexObjectOfType<HazardousTerrain>(),
-						async enteredHexParameters =>
-						{
-							await AbilityCmd.AddCondition(pullParameters.AbilityState, enteredHexParameters.Figure, Conditions.Immobilize);
-						});
-						await GDTask.CompletedTask;
-					}))
-				.WithOnAbilityEndedPerformed(async state =>
+			new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
 				{
-					ScenarioEvents.HazardousTerrainTriggeredEvent.Unsubscribe(state, this);
-					await GDTask.CompletedTask;
+					Hex selectedHex = await AbilityCmd.SelectHex(state, list =>
+					{
+						foreach (Hex possibleHex in RangeHelper.GetHexesInRange(state.Performer.Hex, 2, true, true))
+						{
+							list.Add(possibleHex);
+						}
+					}, false, $"Create one 1-hex Crystal Prism obstacle in one empty hex within {Icons.Inline(Icons.Range)}2");
+
+					await CreateCrystalPrismObstacle(selectedHex, state.Performer);
 				})
-				.WithConditionalAbilityCheck(state => AbilityCmd.HasPerformedAbility(state, 0))
 				.Build())
 		];
 
@@ -47,20 +37,20 @@ public class StrongFoundation : RefractorCardModel<StrongFoundation.CardTop, Str
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(MoveAbility.Builder()
-				.WithDistance(3, new MoveSquare(this, new Vector2(0.62026906f, 0.62831855f)))
-				.Build()),
-
-			new AbilityCardAbility(SufferDamageAbility.Builder()
-				.WithDamage(1)
-				.WithRange(1)
-				.WithTarget(Target.Enemies)
-				.Build()),
-
 			new AbilityCardAbility(OtherAbility.Builder()
-			.WithPerformAbility(state => AbilityCmd.InfuseElement(state, Element.Earth))
-			.WithConditionalAbilityCheck(state => AbilityCmd.AskConsumeElement(state.Performer, Element.Earth))
-			.Build())
+				.WithPerformAbility(async state =>
+				{
+					Hex selectedHex = await AbilityCmd.SelectHex(state, list =>
+					{
+						foreach (Hex possibleHex in RangeHelper.GetHexesInRange(state.Performer.Hex, 1, true, true))
+						{
+							list.Add(possibleHex);
+						}
+					}, false, $"Create one 1-hex Crystal Prism obstacle in one adjacent empty hex");
+
+					await CreateCrystalPrismObstacle(selectedHex, state.Performer);
+				})
+				.Build())
 		];
 	}
 }
