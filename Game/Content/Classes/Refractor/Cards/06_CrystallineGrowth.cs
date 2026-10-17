@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Fractural.Tasks;
 using Godot;
 
 public class CrystallineGrowth : RefractorCardModel<CrystallineGrowth.CardTop, CrystallineGrowth.CardBottom>
@@ -11,7 +12,6 @@ public class CrystallineGrowth : RefractorCardModel<CrystallineGrowth.CardTop, C
 
 	public class CardTop : RefractorCardSide
 	{
-		int _targets = 1;
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
 			new AbilityCardAbility(AttackAbility.Builder()
@@ -20,24 +20,23 @@ public class CrystallineGrowth : RefractorCardModel<CrystallineGrowth.CardTop, C
 				.WithConditions(Conditions.Muddle)
 				.WithOnAbilityStarted(DoAttackRefraction())
 				.WithCustomGetTargets(CustomRefractionAttackTargets())
-				.WithOnAbilityStarted(async state =>
-				{
-					if (await AbilityCmd.AskConsumeElement(state.Performer, Element.Light))
-					{
-						await AbilityCmd.GainXP(state.Performer, 1);
-						_targets = 2;
-					}
-				})
-				.WithTargets(_targets)
-				.WithAfterTargetConfirmedSubscription(
-					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
-						parameters => GetRefractedPrisms(parameters.AbilityState).Any(),
+				.WithDuringAttackSubscription(
+					ScenarioEvents.DuringAttack.Subscription.ConsumeElement(Element.Light, _ => true,
 						async parameters =>
 						{
-							await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer);
-						}
-					)
+							parameters.AbilityState.AdjustTargets(1);
+							await AbilityCmd.GainXP(parameters.Performer, 1);
+						},
+						effectInfoViewParameters: new TextEffectInfoView.Parameters(
+							"+1 target"))
 				)
+				.WithOnAbilityEnded(async state =>
+				{
+					if (DidAnyAttackRefract(state))
+					{
+						await AbilityCmd.InfuseElement(state, Element.Light, state.Performer);
+					}
+				})
 				.Build())
 		];
 	}
@@ -51,7 +50,7 @@ public class CrystallineGrowth : RefractorCardModel<CrystallineGrowth.CardTop, C
 			{
 				foreach (Hex hex in RangeHelper.GetHexesInRange(state.Performer.Hex, 2, false, true))
 				{
-					if (RangeHelper.Distance(state.Performer.Hex, hex) == 2)
+					if (RangeHelper.Distance(state.Performer.Hex, hex) == 2 && hex.IsEmpty())
 					{
 						list.Add(hex);
 					}
@@ -64,7 +63,7 @@ public class CrystallineGrowth : RefractorCardModel<CrystallineGrowth.CardTop, C
 			{
 				foreach (Hex hex in RangeHelper.GetHexesInRange(state.Performer.Hex, 4, false, true))
 				{
-					if (RangeHelper.Distance(state.Performer.Hex, hex) == 4)
+					if (RangeHelper.Distance(state.Performer.Hex, hex) == 4 && hex.IsEmpty())
 					{
 						list.Add(hex);
 					}
@@ -77,7 +76,7 @@ public class CrystallineGrowth : RefractorCardModel<CrystallineGrowth.CardTop, C
 			{
 				foreach (Hex hex in RangeHelper.GetHexesInRange(state.Performer.Hex, 6, false, true))
 				{
-					if (RangeHelper.Distance(state.Performer.Hex, hex) == 6)
+					if (RangeHelper.Distance(state.Performer.Hex, hex) == 6 && hex.IsEmpty())
 					{
 						list.Add(hex);
 					}

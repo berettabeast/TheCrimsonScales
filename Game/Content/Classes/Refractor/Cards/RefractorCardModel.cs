@@ -58,12 +58,15 @@ public abstract class RefractorCardSide : AbilityCardSideModel<Refractor>
 
 			for (int i = 0; i < state.AbilityTargets; i++)
 			{
+				usedPrisms.Clear();
+				origin = state.Performer.Hex;
+
 				while (true)
 				{
 					var targetableHexes = RangeHelper.GetHexesInRange(origin, range, false, true)
 					.Where(h => 
 						h.GetHexObjectsOfType<Prism>().Any(p => !usedPrisms.Contains(p)) || 
-						h.GetHexObjectsOfType<Figure>().Any(f => f.EnemiesWith(state.Performer)) &&
+						h.GetHexObjectsOfType<Figure>().Any(f => f.EnemiesWith(state.Performer) && !targets.Contains(f)) &&
 						(usedPrisms.Count == 0 || IsStraightLine(origin, h)))
 					.ToList();
 
@@ -99,7 +102,7 @@ public abstract class RefractorCardSide : AbilityCardSideModel<Refractor>
 					{
 						targets.Add(target);
 					}
-					state.SetCustomValue(this, "RefractedPrisms", usedPrisms);
+					state.SetCustomValue(this, $"RefractedPrisms_{i}", new List<Prism>(usedPrisms));
 					break;
 				}
 			}
@@ -199,13 +202,27 @@ public abstract class RefractorCardSide : AbilityCardSideModel<Refractor>
 		};
 	}
 
-	public bool DidRefract(AbilityState state)
+	public bool DidRefract(AbilityState state, int abilityIndex = 0)
 	{
-		return state.GetCustomValue<List<Prism>>(this, "RefractedPrisms").Count > 0;
+		return state.GetCustomValue<List<Prism>>(this, $"RefractedPrisms_{abilityIndex}").Count() > 0;
 	}
 
-	public List<Prism> GetRefractedPrisms(AbilityState state)
+	public bool DidAnyAttackRefract(AttackAbility.State state)
 	{
-		return state.GetCustomValue<List<Prism>>(this, "RefractedPrisms");
+		bool anyRefracted = false;
+
+		for (int i = 0; i < state.UniqueTargetedFigures.Count(); i++)
+		{
+			if (state.GetCustomValue<List<Prism>>(this, $"RefractedPrisms_{i}").Any())
+			{
+				anyRefracted = true;
+			}
+		}
+		return anyRefracted;
+	}
+
+	public List<Prism> GetRefractedPrisms(AbilityState state, int abilityIndex = 0)
+	{
+		return state.GetCustomValue<List<Prism>>(this, $"RefractedPrisms_{abilityIndex}");
 	}
 }

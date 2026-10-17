@@ -60,6 +60,7 @@ public class CrystalShrapnel : RefractorCardModel<CrystalShrapnel.CardTop, Cryst
 		[
 			new AbilityCardAbility(MoveAbility.Builder()
 			.WithDistance(3, new MoveSquare(this, new Vector2(0.3f, 0.5f)))
+			.WithMoveType(MoveType.Jump)
 			.WithOnAbilityStarted(async state =>
 			{
 				ScenarioEvents.FigureExitingHexEvent.Subscribe(state.Performer, this,
