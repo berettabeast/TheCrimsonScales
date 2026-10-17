@@ -51,28 +51,50 @@ public class CrystalShrapnel : RefractorCardModel<CrystalShrapnel.CardTop, Cryst
 				})
 				.Build())
 		];
-
-		public override int XP => 1;
 	}
 
 	public class CardBottom : RefractorCardSide
 	{
+		List<Prism> _prismsMovedThrough = new List<Prism>();
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
 			new AbilityCardAbility(MoveAbility.Builder()
-			.WithDistance(2, new MoveSquare(this, new Vector2(0.3f, 0.5f)))
-			.Build()),
-
-			new AbilityCardAbility(ShieldAbility.Builder()
-			.WithShieldValue(1)
+			.WithDistance(3, new MoveSquare(this, new Vector2(0.3f, 0.5f)))
+			.WithOnAbilityStarted(async state =>
+			{
+				ScenarioEvents.FigureExitingHexEvent.Subscribe(state.Performer, this,
+					parameters => parameters.PotentialAbilityState == state,
+					async parameters =>
+					{
+						if (parameters.Figure.Hex.HasHexObjectOfType<Prism>())
+						{
+							_prismsMovedThrough.Add(parameters.Figure.Hex.GetHexObjectOfType<Prism>());
+						}
+					});
+			})
 			.Build()),
 
 			new AbilityCardAbility(OtherAbility.Builder()
-			.WithPerformAbility(state => AbilityCmd.InfuseElement(state, Element.Earth))
-			.WithConditionalAbilityCheck(state => AbilityCmd.AskConsumeElement(state.Performer, Element.Earth))
-			.Build()
-			)
+			.WithPerformAbility(async state =>
+			{
+				var selected = await AbilityCmd.SelectOverlayTile(state, list =>
+				{
+					foreach (Prism prism in _prismsMovedThrough)
+					{
+						list.Add(prism);
+					}
+				}, false, "Select a prism to destroy:");
+
+				if (selected != null)
+				{
+					await AbilityCmd.TryDestroyObstacle((Prism)selected);
+					await AbilityCmd.InfuseElement(state, Element.Earth);
+					var createPrismAbility = new AbilityCardAbility(CreatePrismObstacleBuilder().Build());
+					await createPrismAbility.Ability.Perform(state.ActionState);
+				}
+			})
+			.WithConditionalAbilityCheck(async _ => _prismsMovedThrough.Any())
+			.Build())
 		];
-		public override bool Round => true;
 	}
 }
