@@ -51,9 +51,9 @@ public abstract class RefractorCardSide : AbilityCardSideModel<Refractor>
 	{
 		return async state =>
 		{
-			var origin = state.Performer.Hex;
-			var range = state.AbilityRange;
-			var usedPrisms = new HashSet<Prism>();
+			Hex origin = state.Performer.Hex;
+			int range = state.AbilityRange;
+			List<Prism> usedPrisms = new List<Prism>();
 			List<Figure> targets = new List<Figure>();
 
 			for (int i = 0; i < state.AbilityTargets; i++)
@@ -126,9 +126,9 @@ public abstract class RefractorCardSide : AbilityCardSideModel<Refractor>
 	{
 		return async state =>
 		{
-			var origin = state.Performer.Hex;
-			var range = state.AbilityRange;
-			var usedPrisms = new HashSet<Prism>();
+			Hex origin = state.Performer.Hex;
+			int range = state.AbilityRange;
+			List<Prism> usedPrisms = new List<Prism>();
 			List<Figure> targets = new List<Figure>();
 
 			for (int i = 0; i < state.AbilityTargets; i++)
@@ -197,5 +197,15 @@ public abstract class RefractorCardSide : AbilityCardSideModel<Refractor>
 				}
 			}
 		};
+	}
+
+	public bool DidRefract(AbilityState state)
+	{
+		return state.GetCustomValue<List<Prism>>(this, "RefractedPrisms").Count > 0;
+	}
+
+	public List<Prism> GetRefractedPrisms(AbilityState state)
+	{
+		return state.GetCustomValue<List<Prism>>(this, "RefractedPrisms");
 	}
 }

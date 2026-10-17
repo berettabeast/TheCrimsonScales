@@ -19,6 +19,10 @@ public class RestorativeLight : RefractorCardModel<RestorativeLight.CardTop, Res
 				.WithOnAbilityStarted(DoHealRefraction())
 				.WithTarget(Target.Allies)
 				.WithRange(2)
+				.WithAfterTargetConfirmedSubscription(
+					ScenarioEvents.HealAfterTargetConfirmed.Subscription.New(
+						parameters => DidRefract(parameters.AbilityState),
+						async parameters => await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer)))
 				.WithDuringHealSubscription(
 					ScenarioEvents.DuringHeal.Subscription.ConsumeElement(Element.Light,
 						applyFunction: async parameters =>
