@@ -20,8 +20,8 @@ public class CrystalShrapnel : RefractorCardModel<CrystalShrapnel.CardTop, Cryst
 				.WithDamage(2)
 				.WithRange(2)
 				.WithConditions(Conditions.Wound1)
-				.WithOnAbilityStarted(DoRefraction())
-				.WithCustomGetTargets(CustomRefractionTargets())
+				.WithOnAbilityStarted(DoAttackRefraction())
+				.WithCustomGetTargets(CustomRefractionAttackTargets())
 				.WithAfterTargetConfirmedSubscription(
 					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
 						parameters => parameters.AbilityState.GetCustomValue<HashSet<Prism>>(this, "RefractedPrisms").Count > 0,

@@ -47,68 +47,154 @@ public abstract class RefractorCardSide : AbilityCardSideModel<Refractor>
 		return dq == 0 || dr == 0 || ds == 0;
 	}
 
-	public Func<AttackAbility.State, GDTask> DoRefraction()
+	public Func<AttackAbility.State, GDTask> DoAttackRefraction()
 	{
 		return async state =>
 		{
 			var origin = state.Performer.Hex;
 			var range = state.AbilityRange;
 			var usedPrisms = new HashSet<Prism>();
+			List<Figure> targets = new List<Figure>();
 
-			while (true)
+			for (int i = 0; i < state.AbilityTargets; i++)
 			{
-				var targetableHexes = RangeHelper.GetHexesInRange(origin, range, false, true)
-				.Where(h => 
-					h.GetHexObjectsOfType<Prism>().Any(p => !usedPrisms.Contains(p)) || 
-					h.GetHexObjectsOfType<Figure>().Any(f => f.EnemiesWith(state.Performer)) &&
-					(usedPrisms.Count == 0 || IsStraightLine(origin, h)))
-				.ToList();
-
-				if (!targetableHexes.Any())
+				while (true)
 				{
-					break;
-				}
+					var targetableHexes = RangeHelper.GetHexesInRange(origin, range, false, true)
+					.Where(h => 
+						h.GetHexObjectsOfType<Prism>().Any(p => !usedPrisms.Contains(p)) || 
+						h.GetHexObjectsOfType<Figure>().Any(f => f.EnemiesWith(state.Performer)) &&
+						(usedPrisms.Count == 0 || IsStraightLine(origin, h)))
+					.ToList();
 
-				Hex selectedHex = await AbilityCmd.SelectHex(state, list =>
-				{
-					foreach (Hex hex in targetableHexes)
+					if (!targetableHexes.Any())
 					{
-						list.Add(hex);
+						break;
 					}
-				}, false, "Select a prism or target:");
 
-				if (selectedHex == null)
-				{
+					Hex selectedHex = await AbilityCmd.SelectHex(state, list =>
+					{
+						foreach (Hex hex in targetableHexes)
+						{
+							list.Add(hex);
+						}
+					}, false, "Select a prism or target:");
+
+					if (selectedHex == null)
+					{
+						break;
+					}
+
+					if (selectedHex.HasHexObjectOfType<Prism>())
+					{
+						usedPrisms.Add(selectedHex.GetHexObjectOfType<Prism>());
+						origin = selectedHex;
+						continue;
+					}
+					
+					Figure target = selectedHex.GetHexObjectsOfType<Figure>()
+						.FirstOrDefault(f => f.EnemiesWith(state.Performer));
+
+					if (target != null)
+					{
+						targets.Add(target);
+					}
+					state.SetCustomValue(this, "RefractedPrisms", usedPrisms);
 					break;
 				}
+			}
+			state.SetCustomValue(this, "CustomAttackTargets", targets);
+		};
+	}
 
-				if (selectedHex.HasHexObjectOfType<Prism>())
+	public Action<AttackAbility.State, List<Figure>> CustomRefractionAttackTargets()
+	{
+		return (state, list) =>
+		{
+			var targets = state.GetCustomValue<List<Figure>>(this, "CustomAttackTargets");
+			if (targets != null)
+			{
+				foreach (Figure target in targets)
 				{
-					usedPrisms.Add(selectedHex.GetHexObjectOfType<Prism>());
-					origin = selectedHex;
-					continue;
+					list.Add(target);
 				}
-				
-				Figure target = selectedHex.GetHexObjectsOfType<Figure>()
-					.FirstOrDefault(f => f.EnemiesWith(state.Performer));
-
-				if (target != null)
-				{
-					state.SetCustomValue(this, "ForcedTarget", target);
-				}
-				state.SetCustomValue(this, "RefractedPrisms", usedPrisms);
-				break;
 			}
 		};
 	}
 
-	public Action<AttackAbility.State, List<Figure>> CustomRefractionTargets()
+	public Func<HealAbility.State, GDTask> DoHealRefraction()
+	{
+		return async state =>
+		{
+			var origin = state.Performer.Hex;
+			var range = state.AbilityRange;
+			var usedPrisms = new HashSet<Prism>();
+			List<Figure> targets = new List<Figure>();
+
+			for (int i = 0; i < state.AbilityTargets; i++)
+			{
+				usedPrisms.Clear();
+				
+				while (true)
+				{
+					var targetableHexes = RangeHelper.GetHexesInRange(origin, range, false, true)
+					.Where(h => 
+						h.GetHexObjectsOfType<Prism>().Any(p => !usedPrisms.Contains(p)) || 
+						h.GetHexObjectsOfType<Figure>().Any(f => f.AlliedWith(state.Performer)) &&
+						(usedPrisms.Count == 0 || IsStraightLine(origin, h)))
+					.ToList();
+
+					if (!targetableHexes.Any())
+					{
+						break;
+					}
+
+					Hex selectedHex = await AbilityCmd.SelectHex(state, list =>
+					{
+						foreach (Hex hex in targetableHexes)
+						{
+							list.Add(hex);
+						}
+					}, false, "Select a prism or target:");
+
+					if (selectedHex == null)
+					{
+						break;
+					}
+
+					if (selectedHex.HasHexObjectOfType<Prism>())
+					{
+						usedPrisms.Add(selectedHex.GetHexObjectOfType<Prism>());
+						origin = selectedHex;
+						continue;
+					}
+					
+					Figure target = selectedHex.GetHexObjectsOfType<Figure>()
+						.FirstOrDefault(f => f.AlliedWith(state.Performer));
+
+					if (target != null)
+					{
+						targets.Add(target);
+					}
+					state.SetCustomValue(this, "RefractedPrisms", usedPrisms);
+					break;
+				}
+			}
+			state.SetCustomValue(this, "CustomHealTargets", targets);
+		};
+	}
+
+	public Action<HealAbility.State, List<Figure>> CustomRefractionHealTargets()
 	{
 		return (state, list) =>
 		{
-			if (state.GetCustomValue<Figure>(this, "ForcedTarget") != null)
+			var targets = state.GetCustomValue<List<Figure>>(this, "CustomHealTargets");
+			if (targets != null)
 			{
-				list.Add(state.GetCustomValue<Figure>(this, "ForcedTarget"));
+				foreach (Figure target in targets)
+				{
+					list.Add(target);
+				}
 			}
 		};
 	}
