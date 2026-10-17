@@ -39,16 +39,16 @@ public class MonsterTargetSelectionPrompt(
 		}
 
 		//Fearsome Taunt bottom
-		Character taunting = FearsomeTaunt.CardBottom.Taunting;
-		if(taunting != null &&
-			_allTargets.Contains(taunting) &&
-			!_validTargets.Contains(taunting) &&
-			focus != null &&
-			taunting.AlliedWith(focus) &&
-			RangeHelper.Distance(taunting.Hex, focus.Hex) <= 1)
-		{
-			_validTargets.Add(taunting);
-		}
+		// Character taunting = FearsomeTaunt.CardBottom.Taunting;
+		// if(taunting != null &&
+		// 	_allTargets.Contains(taunting) &&
+		// 	!_validTargets.Contains(taunting) &&
+		// 	focus != null &&
+		// 	taunting.AlliedWith(focus) &&
+		// 	RangeHelper.Distance(taunting.Hex, focus.Hex) <= 1)
+		// {
+		// 	_validTargets.Add(taunting);
+		// }
 		//---------------------------
 
 		if(autoSelectIfOne && _validTargets.Count == 1)

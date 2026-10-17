@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using Godot;
 using Fractural.Tasks;
 using System.Data;
+using System.Linq;
+using System.Runtime.CompilerServices;
 
 public class CrystalShrapnel : RefractorCardModel<CrystalShrapnel.CardTop, CrystalShrapnel.CardBottom>
 {
@@ -14,7 +16,17 @@ public class CrystalShrapnel : RefractorCardModel<CrystalShrapnel.CardTop, Cryst
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(RefractingAttack(2).Build())
+			new AbilityCardAbility(AttackAbility.Builder()
+				.WithDamage(2)
+				.WithRange(2)
+				.WithConditions(Conditions.Wound1)
+				.WithOnAbilityStarted(DoRefraction())
+				.WithCustomGetTargets(CustomRefractionTargets())
+				.WithAfterTargetConfirmedSubscription(
+					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
+						parameters => parameters.AbilityState.GetCustomValue<HashSet<Prism>>(this, "RefractedPrisms").Count > 0,
+						async parameters => await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer)))
+				.Build())
 		];
 
 		public override int XP => 1;

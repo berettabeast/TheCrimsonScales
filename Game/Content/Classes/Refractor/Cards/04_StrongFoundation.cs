@@ -15,19 +15,19 @@ public class StrongFoundation : RefractorCardModel<StrongFoundation.CardTop, Str
 		[
 				
 			new AbilityCardAbility(OtherAbility.Builder()
-				.WithPerformAbility(async state =>
+				.WithPerformAbility(async parameters =>
 				{
-					Hex selectedHex = await AbilityCmd.SelectHex(state, list =>
+					await AbilityCmd.SelectHex(parameters, list =>
 					{
-						foreach (Hex possibleHex in RangeHelper.GetHexesInRange(state.Performer.Hex, 2, true, true))
+						foreach (Hex hex in RangeHelper.GetHexesInRange(parameters.Performer.Hex, 2, false, true))
 						{
-							list.Add(possibleHex);
+							if (hex.IsEmpty())
+							{
+								list.Add(hex);
+							}
 						}
-					}, false, $"Create one 1-hex Crystal Prism obstacle in one empty hex within {Icons.Inline(Icons.Range)}2");
-
-					await CreateCrystalPrismObstacle(selectedHex, state.Performer);
-				})
-				.Build())
+					}, false);
+				}).Build())
 		];
 
 		public override int XP => 1;
@@ -37,20 +37,7 @@ public class StrongFoundation : RefractorCardModel<StrongFoundation.CardTop, Str
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(OtherAbility.Builder()
-				.WithPerformAbility(async state =>
-				{
-					Hex selectedHex = await AbilityCmd.SelectHex(state, list =>
-					{
-						foreach (Hex possibleHex in RangeHelper.GetHexesInRange(state.Performer.Hex, 1, true, true))
-						{
-							list.Add(possibleHex);
-						}
-					}, false, $"Create one 1-hex Crystal Prism obstacle in one adjacent empty hex");
-
-					await CreateCrystalPrismObstacle(selectedHex, state.Performer);
-				})
-				.Build())
+			new AbilityCardAbility(CreatePrismObstacleBuilder().WithRange(3).WithObstacleCount(2).Build())
 		];
 	}
 }

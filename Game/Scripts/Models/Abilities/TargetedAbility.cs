@@ -967,13 +967,13 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>, ITarg
 				figures.RemoveAt(i);
 			}
 
-			Character taunting = FearsomeTaunt.CardBottom.Taunting;
-			if(taunting != null &&
-				!figures.Contains(taunting) &&
-				figures.Any(figure => taunting.AlliedWith(figure) && RangeHelper.Distance(taunting.Hex, figure.Hex) <= 1))
-			{
-				figures.Add(taunting);
-			}
+			// Character taunting = FearsomeTaunt.CardBottom.Taunting;
+			// if(taunting != null &&
+			// 	!figures.Contains(taunting) &&
+			// 	figures.Any(figure => taunting.AlliedWith(figure) && RangeHelper.Distance(taunting.Hex, figure.Hex) <= 1))
+			// {
+			// 	figures.Add(taunting);
+			// }
 		}
 	}
 

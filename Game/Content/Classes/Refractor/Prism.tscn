@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://157cjx26xaja"]
+
+[ext_resource type="PackedScene" uid="uid://m86r4w34m60s" path="res://Scenes/Scenario/OverlayTiles/Obstacle1H.tscn" id="1_qe1xl"]
+[ext_resource type="Script" uid="uid://pfptp13rdg0p" path="res://Content/Classes/Refractor/Prism.cs" id="2_6v4vs"]
+[ext_resource type="Texture2D" uid="uid://d341q27gwcsrp" path="res://Art/OverlayTiles/Crystal 1h.png" id="2_jwoxd"]
+
+[node name="Prism" unique_id=1957052089 instance=ExtResource("1_qe1xl")]
+script = ExtResource("2_6v4vs")
+
+[node name="Sprite" parent="." index="1" unique_id=786075991]
+texture = ExtResource("2_jwoxd")
