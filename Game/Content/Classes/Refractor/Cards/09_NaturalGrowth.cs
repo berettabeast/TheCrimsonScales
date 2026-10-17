@@ -4,45 +4,36 @@ using Godot;
 
 public class NaturalGrowth : RefractorCardModel<NaturalGrowth.CardTop, NaturalGrowth.CardBottom>
 {
-	public override string Name => "Superradiance";
+	public override string Name => "Natural Growth";
 	public override int Level => 1;
-	public override int Initiative => 48;
+	public override int Initiative => 87;
 	protected override int AtlasIndex => 9;
 
 	public class CardTop : RefractorCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(PushAbility.Builder()
-				.WithPush(1)
-				.WithTarget(Target.Enemies | Target.TargetAll)
-				.WithRange(3)
-				.WithConditions(Conditions.Muddle)
+			new AbilityCardAbility(ConditionAbility.Builder()
+				.WithConditions(Conditions.Regenerate)
+				.WithTarget(Target.Self)
 				.Build())
 		];
-		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Light)];
-		public override int XP => 1;
+		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Light), CardElementInfusion.Infuse(Element.Earth)];
 	}
 
 	public class CardBottom : RefractorCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(OtherAbility.Builder()
-				.WithPerformAbility(async state =>
-					{
-						
-					})
+			new AbilityCardAbility(LootAbility.Builder()
+				.WithRange(1)
 				.Build()),
 
-			new AbilityCardAbility(MoveAbility.Builder()
-				.WithDistance(2, new MoveSquare(this, new Vector2(0.2f, 0.3f)))
-				.Build()),
-
-			new AbilityCardAbility(HealAbility.Builder()
-				.WithHealValue(1)
-				.WithRange(2, new RangeSquare(this, new Vector2(0.2f, 0.3f)))
+			new AbilityCardAbility(CreatePrismObstacleBuilder()
+				.WithRange(2)
+				.WithConditionalAbilityCheck(async state => await AbilityCmd.AskConsumeElement(state.Authority, Element.Earth))
 				.Build())
 		];
+		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Earth)];
 	}
 }

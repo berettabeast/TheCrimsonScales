@@ -14,30 +14,39 @@ public class StrongFoundation : RefractorCardModel<StrongFoundation.CardTop, Str
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
 				
-			new AbilityCardAbility(OtherAbility.Builder()
-				.WithPerformAbility(async parameters =>
-				{
-					await AbilityCmd.SelectHex(parameters, list =>
-					{
-						foreach (Hex hex in RangeHelper.GetHexesInRange(parameters.Performer.Hex, 2, false, true))
-						{
-							if (hex.IsEmpty())
-							{
-								list.Add(hex);
-							}
-						}
-					}, false);
-				}).Build())
+			new AbilityCardAbility(CreatePrismObstacleBuilder()
+				.WithRange(2)
+				.Build()),
+
+			new AbilityCardAbility(AttackAbility.Builder()
+				.WithDamage(2)
+				.WithRange(2)
+				.WithOnAbilityStarted(DoAttackRefraction())
+				.WithCustomGetTargets(CustomRefractionAttackTargets())
+				.WithOnAbilityEndedPerformed(async state => await AbilityCmd.GainXP(state.Performer, 1))
+				.WithConditionalAbilityCheck(async state => await AbilityCmd.AskConsumeElement(state.Authority, Element.Light, false))
+				.Build())
 		];
 
-		public override int XP => 1;
+		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Earth)];
 	}
 
 	public class CardBottom : RefractorCardSide
 	{
+		int _range = 1;
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(CreatePrismObstacleBuilder().WithRange(3).WithObstacleCount(2).Build())
+			new AbilityCardAbility(CreatePrismObstacleBuilder()
+				.WithOnAbilityStarted( async state =>
+				{
+					if (await AbilityCmd.AskConsumeElement(state.Performer, Element.Earth))
+					{
+						_range = 2;
+						await AbilityCmd.GainXP(state.Performer, 1);
+					}
+				})
+				.WithRange(_range)
+				.Build())
 		];
 	}
 }

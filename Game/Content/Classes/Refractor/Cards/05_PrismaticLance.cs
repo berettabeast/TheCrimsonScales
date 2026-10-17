@@ -1,56 +1,45 @@
 using System.Collections.Generic;
+using System.Linq;
 using Fractural.Tasks;
 using Godot;
 
 public class PrismaticLance : RefractorCardModel<PrismaticLance.CardTop, PrismaticLance.CardBottom>
 {
-	public override string Name => "Lashing Thorns";
+	public override string Name => "Prismatic Lance";
 	public override int Level => 1;
-	public override int Initiative => 39;
+	public override int Initiative => 47;
 	protected override int AtlasIndex => 5;
 
 	public class CardTop : RefractorCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(OtherAbility.Builder()
-				.WithPerformAbility(async state =>
-					{
-					})
-				.Build()),
-
 			new AbilityCardAbility(AttackAbility.Builder()
-				.WithDamage(2)
-				.WithPierce(1, new PierceSquare(this, new Vector2(0.2f, 0.3f)))
-				.WithAOEPattern(new AOEPattern([
-					new AOEHex(Vector2I.Zero, AOEHexType.Gray),
-					new AOEHex(Vector2I.Zero.Add(Direction.NorthWest), AOEHexType.Red),
-					new AOEHex(Vector2I.Zero.Add(Direction.East), AOEHexType.Red),
-				]),
-				new AOEHexMark(Vector2I.Zero.Add(Direction.NorthWest).Add(Direction.West), this, new Vector2(0.5f, 0.4f)),
-				new AOEHexMark(Vector2I.Zero.Add(Direction.East).Add(Direction.East), this, new Vector2(0.5f, 0.4f)))
-				.WithAfterTargetConfirmedSubscription(
-					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
-						parameters => parameters.Performer.Hex.HasHexObjectOfType<HazardousTerrain>(),
+				.WithDamage(3)
+				.WithRange(2)
+				.WithOnAbilityStarted(DoAttackRefraction())
+				.WithCustomGetTargets(CustomRefractionAttackTargets())
+				.WithDuringAttackSubscription(
+					ScenarioEvents.DuringAttack.Subscription.ConsumeElement(Element.Light,
+						_ => true,
 						async parameters =>
 						{
+							parameters.AbilityState.AbilitySetAOEPattern(new AOEPattern([
+								new AOEHex(Vector2I.Zero, AOEHexType.Red), 
+								new AOEHex(Vector2I.Zero.Add(Direction.NorthEast), AOEHexType.Red)
+								]));
+
 							await AbilityCmd.GainXP(parameters.Performer, 1);
-							await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light);
-							parameters.AbilityState.SetCustomValue(this, "TargetOnHazardous", true);
-							parameters.AbilityState.SingleTargetAdjustAttackValue(1);
-						}
-					))
-				.WithGetTargetingHintText(state =>
-					{
-						if (state.GetCustomValue<bool>(this, "TargetOnHazardous"))
+						}))
+				.WithAfterTargetConfirmedSubscription(
+					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
+						parameters => GetRefractedPrisms(parameters.AbilityState).Any(),
+						async parameters =>
 						{
-							return $"Select a target for {Icons.HintText(Icons.Attack)}3";
+							await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer);
 						}
-						else
-						{
-							return $"Select a target for {Icons.HintText(Icons.Attack)}2";
-						}
-					})
+					)
+				)
 				.Build())
 		];
 	}
@@ -60,17 +49,8 @@ public class PrismaticLance : RefractorCardModel<PrismaticLance.CardTop, Prismat
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
 			new AbilityCardAbility(MoveAbility.Builder()
-				.WithDistance(4, new MoveCircle(this, new Vector2(0.2f, 0.3f)))
-				.Build()),
-
-			new AbilityCardAbility(PullAbility.Builder()
-				.WithPull(2)
-				.WithRange(3, new RangeSquare(this, new Vector2(0.2f, 0.3f)))
-				.WithTargets(2, new TargetsSquare(this, new Vector2(0.2f, 0.3f)))
+				.WithDistance(4)
 				.Build())
 		];
-
-		public override int XP => 1;
-		public override bool Loss => true;
 	}
 }
