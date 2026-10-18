@@ -311,7 +311,7 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>, ITarg
 	private static readonly List<Hex> HexCache = new List<Hex>();
 	private static readonly List<Node2D> PreviousParents = new List<Node2D>();
 
-	private Func<T, string> _getTargetingHintText;
+	protected Func<T, string> _getTargetingHintText;
 
 	public DynamicInt Range { get; private set; } = 1;
 	public int MinRange { get; private set; } = 0;
@@ -821,7 +821,7 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>, ITarg
 		}
 	}
 
-	private async GDTask ApplyConditions(T abilityState, Figure target, List<ConditionModel> conditionModels)
+	protected async GDTask ApplyConditions(T abilityState, Figure target, List<ConditionModel> conditionModels)
 	{
 		if(!target.IsDestroyed)
 		{

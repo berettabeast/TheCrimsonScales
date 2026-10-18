@@ -1,17 +1,12 @@
-[gd_scene format=3 uid="uid://cxb38j6uerpqk"]
+[gd_scene format=3 uid="uid://d0lps30x0qjw1"]
 
-[ext_resource type="PackedScene" uid="uid://drsppepfslnis" path="res://Scenes/Scenario/Character.tscn" id="1_3p0p2"]
+[ext_resource type="PackedScene" uid="uid://drsppepfslnis" path="res://Scenes/Scenario/Character.tscn" id="1_dnmqh"]
 [ext_resource type="Texture2D" uid="uid://cxl5yo3t7nx33" path="res://Content/Classes/Refractor/MapIcon.tres" id="2_rxl7r"]
 
-[node name="Refractor" unique_id=391697815 instance=ExtResource("1_3p0p2")]
+[node name="Refractor" unique_id=43725059 instance=ExtResource("1_dnmqh")]
 
 [node name="Sprite2D" parent="Mask" parent_id_path=PackedInt32Array(517148938) index="0" unique_id=1804687506]
 texture = ExtResource("2_rxl7r")
 
-[node name="AnimatedSpriteSheet2D" parent="Mask" parent_id_path=PackedInt32Array(517148938) index="1" unique_id=825112643]
-texture = null
-hframes = 12
-vframes = 13
-
 [node name="Outline" parent="." index="2" unique_id=517487183]
-self_modulate = Color(0.9843137, 1, 0.5882353, 1)
+self_modulate = Color(0.7254902, 0.6627451, 0.5137255, 1)

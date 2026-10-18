@@ -33,7 +33,7 @@ public class StrongFoundation : RefractorCardModel<StrongFoundation.CardTop, Str
 
 	public class CardBottom : RefractorCardSide
 	{
-		int _range = 1;
+		int _range = 6;
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
 			new AbilityCardAbility(CreatePrismObstacleBuilder()
@@ -46,6 +46,7 @@ public class StrongFoundation : RefractorCardModel<StrongFoundation.CardTop, Str
 					}
 				})
 				.WithRange(_range)
+				.WithObstacleCount(3)
 				.Build())
 		];
 	}
