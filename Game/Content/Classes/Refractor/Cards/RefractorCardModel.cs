@@ -202,10 +202,10 @@ public abstract class RefractorCardSide : AbilityCardSideModel<Refractor>
 		};
 	}
 
-	public bool DidRefract(AbilityState state, int abilityIndex = 0)
-	{
-		return state.GetCustomValue<List<Prism>>(this, $"RefractedPrisms_{abilityIndex}").Count() > 0;
-	}
+	// public bool DidRefract(AbilityState state, int abilityIndex = 0)
+	// {
+	// 	return state.GetCustomValue<List<Prism>>(this, $"RefractedPrisms_{abilityIndex}").Count() > 0;
+	// }
 
 	public bool DidAnyAttackRefract(AttackAbility.State state)
 	{

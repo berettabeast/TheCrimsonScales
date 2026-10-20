@@ -16,23 +16,33 @@ public class CrystalShrapnel : RefractorCardModel<CrystalShrapnel.CardTop, Cryst
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(AttackAbility.Builder()
+			// new AbilityCardAbility(AttackAbility.Builder()
+			// 	.WithDamage(3)
+			// 	.WithRange(2)
+			// 	.WithOnAbilityStarted(DoAttackRefraction())
+			// 	.WithCustomGetTargets(CustomRefractionAttackTargets())
+			// 	.WithAfterTargetConfirmedSubscription(
+			// 		ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
+			// 			parameters => DidRefract(parameters.AbilityState),
+			// 			async parameters => await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer)))
+			// 	.Build()),
+
+			new AbilityCardAbility(RefractingAttackAbility.Builder()
 				.WithDamage(3)
 				.WithRange(2)
-				.WithOnAbilityStarted(DoAttackRefraction())
-				.WithCustomGetTargets(CustomRefractionAttackTargets())
-				.WithAfterTargetConfirmedSubscription(
-					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
-						parameters => DidRefract(parameters.AbilityState),
-						async parameters => await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer)))
+				// .WithAfterTargetConfirmedSubscription(
+				// 	ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
+				// 		parameters => parameters.AbilityState.GetCustomValue<bool>(this, "DidRefract"),
+				// 		async parameters => await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer))
+				// )
 				.Build()),
 
 			new AbilityCardAbility(OtherAbility.Builder()
 				.WithPerformAbility(async state =>
 				{
-					AttackAbility.State attackAbilityState = state.ActionState.GetAbilityState<AttackAbility.State>(0);
+					var attackAbilityState = state.ActionState.GetAbilityState<AttackAbility.State>(0);
 
-					if (await AbilityCmd.TryDestroyObstacle(GetRefractedPrisms(attackAbilityState).Last()))
+					if (await AbilityCmd.TryDestroyObstacle(state.GetCustomValue<List<Prism>>(attackAbilityState, "UsedPrisms").Last()))
 					{
 						var targets = RangeHelper.GetFiguresInRange(attackAbilityState.Target.Hex, 1, true, false);
 						

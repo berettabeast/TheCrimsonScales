@@ -14,35 +14,18 @@ public class CrystallineGrowth : RefractorCardModel<CrystallineGrowth.CardTop, C
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			// new AbilityCardAbility(AttackAbility.Builder()
-			// 	.WithDamage(3)
-			// 	.WithRange(2)
-			// 	.WithConditions(Conditions.Muddle)
-			// 	.WithOnAbilityStarted(DoAttackRefraction())
-			// 	.WithCustomGetTargets(CustomRefractionAttackTargets())
-			// 	.WithDuringAttackSubscription(
-			// 		ScenarioEvents.DuringAttack.Subscription.ConsumeElement(Element.Light, _ => true,
-			// 			async parameters =>
-			// 			{
-			// 				parameters.AbilityState.AdjustTargets(1);
-			// 				await AbilityCmd.GainXP(parameters.Performer, 1);
-			// 			},
-			// 			effectInfoViewParameters: new TextEffectInfoView.Parameters(
-			// 				"+1 target"))
-			// 	)
-			// 	.WithOnAbilityEnded(async state =>
-			// 	{
-			// 		if (DidAnyAttackRefract(state))
-			// 		{
-			// 			await AbilityCmd.InfuseElement(state, Element.Light, state.Performer);
-			// 		}
-			// 	})
-			// 	.Build())
-
 			new AbilityCardAbility(RefractingAttackAbility.Builder()
 				.WithDamage(3)
 				.WithRange(2)
-				.WithTargets(2)
+				.WithDuringAttackSubscription(
+					ScenarioEvents.DuringAttack.Subscription.ConsumeElement(Element.Light, null,
+						async parameters =>
+						{
+							parameters.AbilityState.AdjustTargets(1);
+
+							await GDTask.CompletedTask;
+						}, effectInfoViewParameters: new TextEffectInfoView.Parameters($"+1{Icons.Inline(Icons.Targets)}"))
+				)
 				.Build())
 		];
 	}

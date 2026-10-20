@@ -188,6 +188,7 @@ public class RefractingAttackAbility : AttackAbility
 
 	    while (true)
 	    {
+            //usedPrisms.Clear();
 	        var targetableHexes = RangeHelper.GetHexesInRange(origin, range, false, true)
 	            .Where(h =>
 	                h.GetHexObjectsOfType<Prism>().Any(p => !usedPrisms.Contains(p)) &&
@@ -226,6 +227,9 @@ public class RefractingAttackAbility : AttackAbility
         if (usedPrisms.Any())
         {
             abilityState.SetPerformHex(usedPrisms.Last().Hex);
+            abilityState.SetCustomValue(this, "DidRefract", true);
+            abilityState.SetCustomValue(this, "RefractCount", usedPrisms.Count);
+            abilityState.SetCustomValue(this, "UsedPrisms", new List<Prism>(usedPrisms));
         }
     }
 
