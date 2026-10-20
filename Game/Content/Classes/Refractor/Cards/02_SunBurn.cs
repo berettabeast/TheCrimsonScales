@@ -20,8 +20,6 @@ public class SunBurn : RefractorCardModel<SunBurn.CardTop, SunBurn.CardBottom>
 			new AbilityCardAbility(AttackAbility.Builder()
 				.WithDamage(2)
 				.WithRange(2)
-				.WithOnAbilityStarted(DoAttackRefraction())
-				.WithCustomGetTargets(CustomRefractionAttackTargets())
 				.WithAfterTargetConfirmedSubscription(
 					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
 						_ => true,
@@ -59,8 +57,6 @@ public class SunBurn : RefractorCardModel<SunBurn.CardTop, SunBurn.CardBottom>
 				.WithDamage(1)
 				.WithRange(2)
 				.WithTargets(2)
-				.WithOnAbilityStarted(DoAttackRefraction())
-				.WithCustomGetTargets(CustomRefractionAttackTargets())
 				.WithDuringAttackSubscription(
 					ScenarioEvents.DuringAttack.Subscription.New(
 						parameters => GetRefractedPrisms(parameters.AbilityState).Any(),

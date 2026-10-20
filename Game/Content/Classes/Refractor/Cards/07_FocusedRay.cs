@@ -20,8 +20,6 @@ public class FocusedRay : RefractorCardModel<FocusedRay.CardTop, FocusedRay.Card
 				.WithDamage(3)
 				.WithRange(2)
 				.WithPierce(2)
-				.WithOnAbilityStarted(DoAttackRefraction())
-				.WithCustomGetTargets(CustomRefractionAttackTargets())
 				.WithDuringAttackSubscription(
 					ScenarioEvents.DuringAttack.Subscription.ConsumeElement(Element.Light,
 						_ => true,

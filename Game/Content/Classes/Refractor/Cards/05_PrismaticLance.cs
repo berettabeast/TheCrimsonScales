@@ -17,8 +17,6 @@ public class PrismaticLance : RefractorCardModel<PrismaticLance.CardTop, Prismat
 			new AbilityCardAbility(AttackAbility.Builder()
 				.WithDamage(3)
 				.WithRange(2)
-				.WithOnAbilityStarted(DoAttackRefraction())
-				.WithCustomGetTargets(CustomRefractionAttackTargets())
 				.WithDuringAttackSubscription(
 					ScenarioEvents.DuringAttack.Subscription.ConsumeElement(Element.Light,
 						_ => true,

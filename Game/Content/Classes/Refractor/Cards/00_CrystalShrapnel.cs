@@ -16,48 +16,43 @@ public class CrystalShrapnel : RefractorCardModel<CrystalShrapnel.CardTop, Cryst
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			// new AbilityCardAbility(AttackAbility.Builder()
-			// 	.WithDamage(3)
-			// 	.WithRange(2)
-			// 	.WithOnAbilityStarted(DoAttackRefraction())
-			// 	.WithCustomGetTargets(CustomRefractionAttackTargets())
-			// 	.WithAfterTargetConfirmedSubscription(
-			// 		ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
-			// 			parameters => DidRefract(parameters.AbilityState),
-			// 			async parameters => await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer)))
-			// 	.Build()),
-
 			new AbilityCardAbility(RefractingAttackAbility.Builder()
 				.WithDamage(3)
 				.WithRange(2)
-				// .WithAfterTargetConfirmedSubscription(
-				// 	ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
-				// 		parameters => parameters.AbilityState.GetCustomValue<bool>(this, "DidRefract"),
-				// 		async parameters => await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer))
-				// )
+				.WithAfterTargetConfirmedSubscription(
+					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
+						parameters => RefractingAttackAbility.RefractionState.DidRefract(parameters.AbilityState),
+						async parameters => await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer))
+				)
 				.Build()),
 
 			new AbilityCardAbility(OtherAbility.Builder()
 				.WithPerformAbility(async state =>
 				{
 					var attackAbilityState = state.ActionState.GetAbilityState<AttackAbility.State>(0);
+					var prisms = RefractingAttackAbility.RefractionState.GetUsedPrisms(attackAbilityState);
 
-					if (await AbilityCmd.TryDestroyObstacle(state.GetCustomValue<List<Prism>>(attackAbilityState, "UsedPrisms").Last()))
+					if (await AbilityCmd.TryDestroyObstacle(prisms.Last()))
 					{
 						var targets = RangeHelper.GetFiguresInRange(attackAbilityState.Target.Hex, 1, true, false);
 						
 						foreach(Figure target in targets)
 						{
-							await AbilityCmd.AddCondition(attackAbilityState, target, Conditions.Wound1);
+							await AbilityCmd.AddCondition(state, target, Conditions.Wound1);
 						}
 					}
 				})
 				.WithConditionalAbilityCheck(async state =>
 				{
-					ConfirmPrompt.Answer confirmAnswer =
+					var attackAbilityState = state.ActionState.GetAbilityState<AttackAbility.State>(0);
+					if (RefractingAttackAbility.RefractionState.DidRefract(attackAbilityState))
+					{
+						ConfirmPrompt.Answer confirmAnswer =
 						await PromptManager.Prompt(new ConfirmPrompt(null, () => "Destroy prism to wound?"), state.Authority);
 
-					return confirmAnswer.Confirmed;
+						return confirmAnswer.Confirmed;
+					}
+					return false;
 				})
 				.Build())
 		];

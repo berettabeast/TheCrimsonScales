@@ -19,8 +19,6 @@ public class CalculatedTrajectory : RefractorCardModel<CalculatedTrajectory.Card
 			new AbilityCardAbility(AttackAbility.Builder()
 				.WithDamage(3)
 				.WithRange(2)
-				.WithOnAbilityStarted(DoAttackRefraction())
-				.WithCustomGetTargets(CustomRefractionAttackTargets())
 				.WithAfterTargetConfirmedSubscription(
 					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
 						parameters => GetRefractedPrisms(parameters.AbilityState).Count() >= 2,
@@ -43,8 +41,6 @@ public class CalculatedTrajectory : RefractorCardModel<CalculatedTrajectory.Card
 			new AbilityCardAbility(AttackAbility.Builder()
 			.WithDamage(1)
 			.WithRange(2)
-			.WithOnAbilityStarted(DoAttackRefraction())
-			.WithCustomGetTargets(CustomRefractionAttackTargets())
 			.WithAfterTargetConfirmedSubscription(
 				ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
 					parameters => GetRefractedPrisms(parameters.AbilityState).Count() >= 2,

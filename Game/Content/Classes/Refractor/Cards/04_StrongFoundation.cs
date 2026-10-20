@@ -21,8 +21,6 @@ public class StrongFoundation : RefractorCardModel<StrongFoundation.CardTop, Str
 			new AbilityCardAbility(AttackAbility.Builder()
 				.WithDamage(2)
 				.WithRange(2)
-				.WithOnAbilityStarted(DoAttackRefraction())
-				.WithCustomGetTargets(CustomRefractionAttackTargets())
 				.WithOnAbilityEndedPerformed(async state => await AbilityCmd.GainXP(state.Performer, 1))
 				.WithConditionalAbilityCheck(async state => await AbilityCmd.AskConsumeElement(state.Authority, Element.Light, false))
 				.Build())

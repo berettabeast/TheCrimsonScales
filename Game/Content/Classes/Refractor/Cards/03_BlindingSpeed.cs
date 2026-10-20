@@ -17,8 +17,6 @@ public class BlindingSpeed : RefractorCardModel<BlindingSpeed.CardTop, BlindingS
 			new AbilityCardAbility(AttackAbility.Builder()
 				.WithDamage(4)
 				.WithDamage(2)
-				.WithOnAbilityStarted(DoAttackRefraction())
-				.WithCustomGetTargets(CustomRefractionAttackTargets())
 				.WithDuringAttackSubscription(
 					ScenarioEvents.DuringAttack.Subscription.ConsumeElement(Element.Light,
 						_ => true,

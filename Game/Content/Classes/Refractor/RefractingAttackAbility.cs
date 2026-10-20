@@ -7,7 +7,29 @@ using Godot;
 
 public class RefractingAttackAbility : AttackAbility
 {
+	public static class RefractionState
+	{
+		public static void SetDidRefract(AbilityState state, bool value, int index = 0) =>
+			state.SetCustomValue(typeof(RefractingAttackAbility), $"DidRefract_{index}", value);
+
+		public static bool DidRefract(AbilityState state, int index = 0) =>
+        state.GetCustomValue<bool>(typeof(RefractingAttackAbility), $"DidRefract_{index}");
+
+		public static void SetRefractCount(AbilityState state, int value, int index = 0) =>
+			state.SetCustomValue(typeof(RefractingAttackAbility), $"RefractCount_{index}", value);
+
+		public static int RefractCount(AbilityState state, int index = 0) =>
+			state.GetCustomValue<int>(typeof(RefractingAttackAbility), $"RefractCount_{index}");
+
+		public static void SetUsedPrisms(AbilityState state, List<Prism> prisms, int index = 0) =>
+			state.SetCustomValue(typeof(RefractingAttackAbility), $"UsedPrisms_{index}", prisms);
+
+		public static List<Prism> GetUsedPrisms(AbilityState state, int index = 0) =>
+			state.GetCustomValue<List<Prism>>(typeof(RefractingAttackAbility), $"UsedPrisms_{index}");
+	}
+
     private Hex _startingPerformHex;
+
     public class RefractingAttackBuilder : AbstractBuilder<RefractingAttackBuilder, RefractingAttackAbility>
     {
         internal RefractingAttackBuilder() { }
@@ -18,14 +40,16 @@ public class RefractingAttackAbility : AttackAbility
         return new RefractingAttackBuilder();
     }
 
+
 	protected override async GDTask Perform(State abilityState)
-	{
+	{		
         if (CustomGetPerformHex != null)
         {
             Hex performHex = CustomGetPerformHex(abilityState);
             abilityState.SetPerformHex(performHex);
         }
 
+		int attackIndex = 0;
         _startingPerformHex = abilityState.GetPerformHex;
 		Figure performer = abilityState.Performer;
         
@@ -69,7 +93,8 @@ public class RefractingAttackAbility : AttackAbility
 			}
 
             abilityState.SetPerformHex(_startingPerformHex);
-            await PerformRefraction(abilityState);
+            await PerformRefraction(abilityState, attackIndex);
+			attackIndex++;
 
 			InitAbilityStateForSingleTarget(abilityState);
 
@@ -180,7 +205,7 @@ public class RefractingAttackAbility : AttackAbility
         abilityState.SetPerformHex(saved);
     }
 
-    protected async GDTask PerformRefraction(State abilityState)
+    protected async GDTask PerformRefraction(State abilityState, int index = 0)
     {
         List<Prism> usedPrisms = new List<Prism>();
         Hex origin = abilityState.GetPerformHex;
@@ -220,16 +245,16 @@ public class RefractingAttackAbility : AttackAbility
 	            continue;
 	        }
 
-	        abilityState.SetCustomValue(this, $"RefractedPrisms", new List<Prism>(usedPrisms));
 	        break;
 	    }
 
         if (usedPrisms.Any())
         {
             abilityState.SetPerformHex(usedPrisms.Last().Hex);
-            abilityState.SetCustomValue(this, "DidRefract", true);
-            abilityState.SetCustomValue(this, "RefractCount", usedPrisms.Count);
-            abilityState.SetCustomValue(this, "UsedPrisms", new List<Prism>(usedPrisms));
+
+            RefractionState.SetDidRefract(abilityState, true, index);
+            RefractionState.SetRefractCount(abilityState, usedPrisms.Count, index);
+			RefractionState.SetUsedPrisms(abilityState, usedPrisms, index);
         }
     }
 
