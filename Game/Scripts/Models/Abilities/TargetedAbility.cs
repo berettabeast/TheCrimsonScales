@@ -311,7 +311,7 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>, ITarg
 	private static readonly List<Hex> HexCache = new List<Hex>();
 	private static readonly List<Node2D> PreviousParents = new List<Node2D>();
 
-	private Func<T, string> _getTargetingHintText;
+	protected Func<T, string> _getTargetingHintText;
 
 	public DynamicInt Range { get; private set; } = 1;
 	public int MinRange { get; private set; } = 0;
@@ -542,12 +542,16 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>, ITarg
 		{
 			List<AOEHex> aoeHexes;
 
+			Hex aoeOrigin = CustomGetPerformHex != null
+				? abilityState.GetPerformHex
+				: TargetHex;
+
 			//TODO: Add `during ability` scenario events to the aoe prompts so the range can be increased
 			if(abilityState.Authority is Character)
 			{
 				AOEPrompt.Answer aoeAnswer =
 					await PromptManager.Prompt(
-						new AOEPrompt(abilityState.Performer, abilityState.AbilityAOEPattern, TargetHex, null, () => "Select where to target",
+						new AOEPrompt(abilityState.Performer, abilityState.AbilityAOEPattern, aoeOrigin, null, () => "Select where to target",
 							abilityState.AbilityRange),
 						abilityState.Authority);
 
@@ -817,7 +821,7 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>, ITarg
 		}
 	}
 
-	private async GDTask ApplyConditions(T abilityState, Figure target, List<ConditionModel> conditionModels)
+	protected async GDTask ApplyConditions(T abilityState, Figure target, List<ConditionModel> conditionModels)
 	{
 		if(!target.IsDestroyed)
 		{
@@ -963,13 +967,13 @@ public abstract class TargetedAbility<T, TSingleTargetState> : Ability<T>, ITarg
 				figures.RemoveAt(i);
 			}
 
-			Character taunting = FearsomeTaunt.CardBottom.Taunting;
-			if(taunting != null &&
-				!figures.Contains(taunting) &&
-				figures.Any(figure => taunting.AlliedWith(figure) && RangeHelper.Distance(taunting.Hex, figure.Hex) <= 1))
-			{
-				figures.Add(taunting);
-			}
+			// Character taunting = FearsomeTaunt.CardBottom.Taunting;
+			// if(taunting != null &&
+			// 	!figures.Contains(taunting) &&
+			// 	figures.Any(figure => taunting.AlliedWith(figure) && RangeHelper.Distance(taunting.Hex, figure.Hex) <= 1))
+			// {
+			// 	figures.Add(taunting);
+			// }
 		}
 	}
 
