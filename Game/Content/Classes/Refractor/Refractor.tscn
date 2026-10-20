@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://d0lps30x0qjw1"]
 
 [ext_resource type="PackedScene" uid="uid://drsppepfslnis" path="res://Scenes/Scenario/Character.tscn" id="1_dnmqh"]
-[ext_resource type="Texture2D" uid="uid://cxl5yo3t7nx33" path="res://Content/Classes/Refractor/MapIcon.tres" id="2_rxl7r"]
+[ext_resource type="Texture2D" uid="uid://cqy5tcy6yt7ob" path="res://Content/Classes/Refractor/MapIcon.tres" id="2_rxl7r"]
 
 [node name="Refractor" unique_id=43725059 instance=ExtResource("1_dnmqh")]
 

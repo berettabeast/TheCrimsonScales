@@ -1,7 +1,7 @@
-[gd_resource type="AtlasTexture" format=3 uid="uid://cxl5yo3t7nx33"]
+[gd_resource type="AtlasTexture" format=3 uid="uid://cqy5tcy6yt7ob"]
 
 [ext_resource type="Texture2D" uid="uid://bkc0my3a3o6pp" path="res://Content/Classes/Refractor/Artwork.png" id="1_gy7ms"]
 
 [resource]
 atlas = ExtResource("1_gy7ms")
-region = Rect2(180, 100, 600, 600)
+region = Rect2(200, 80, 600, 600)
