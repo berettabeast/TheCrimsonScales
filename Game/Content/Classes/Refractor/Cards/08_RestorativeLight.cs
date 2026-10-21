@@ -14,15 +14,10 @@ public class RestorativeLight : RefractorCardModel<RestorativeLight.CardTop, Res
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(HealAbility.Builder()
+			new AbilityCardAbility(RefractingHealAbility.Builder()
 				.WithHealValue(3)
-				.WithOnAbilityStarted(DoHealRefraction())
 				.WithTarget(Target.Allies)
 				.WithRange(2)
-				// .WithAfterTargetConfirmedSubscription(
-				// 	ScenarioEvents.HealAfterTargetConfirmed.Subscription.New(
-				// 		parameters => DidRefract(parameters.AbilityState),
-				// 		async parameters => await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer)))
 				.WithDuringHealSubscription(
 					ScenarioEvents.DuringHeal.Subscription.ConsumeElement(Element.Light,
 						applyFunction: async parameters =>
@@ -33,7 +28,15 @@ public class RestorativeLight : RefractorCardModel<RestorativeLight.CardTop, Res
 						effectInfoViewParameters: new TextEffectInfoView.Parameters(
 							$"Add {Icons.Inline(Icons.GetCondition(Conditions.Bless))}"
 						)))
-				.WithCustomGetTargets(CustomRefractionHealTargets())
+				.WithAfterTargetConfirmedSubscription(
+					ScenarioEvents.HealAfterTargetConfirmed.Subscription.New(
+						parameters => DidHealRefract(parameters.AbilityState),
+						async parameters =>
+						{
+							await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer);
+						}
+					)
+				)
 				.Build())
 		];
 	}
@@ -42,16 +45,10 @@ public class RestorativeLight : RefractorCardModel<RestorativeLight.CardTop, Res
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(HealAbility.Builder()
+			new AbilityCardAbility(RefractingHealAbility.Builder()
 				.WithHealValue(2)
-				.WithOnAbilityStarted(DoHealRefraction())
 				.WithTarget(Target.Allies)
 				.WithRange(2)
-				// .WithAfterTargetConfirmedSubscription(
-				// 	ScenarioEvents.HealAfterTargetConfirmed.Subscription.New(
-				// 		parameters => DidRefract(parameters.AbilityState),
-				// 		async parameters => await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer)))
-				.WithCustomGetTargets(CustomRefractionHealTargets())
 				.Build())
 		];
 		public override int XP => 1;

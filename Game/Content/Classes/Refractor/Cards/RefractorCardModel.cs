@@ -35,100 +35,6 @@ public abstract class RefractorCardSide : AbilityCardSideModel<Refractor>
 			.WithCustomName("Prism");
 	}
 
-	public bool IsStraightLine(Hex from, Hex to)
-	{
-		if (from == to)
-			return true;
-
-		int dq = to.Coords.X - from.Coords.X;
-		int dr = to.Coords.Y - from.Coords.Y;
-
-		int ds = -dq - dr;
-		return dq == 0 || dr == 0 || ds == 0;
-	}
-
-	public Func<HealAbility.State, GDTask> DoHealRefraction()
-	{
-		return async state =>
-		{
-			Hex origin = state.Performer.Hex;
-			int range = state.AbilityRange;
-			List<Prism> usedPrisms = new List<Prism>();
-			List<Figure> targets = new List<Figure>();
-
-			for (int i = 0; i < state.AbilityTargets; i++)
-			{
-				usedPrisms.Clear();
-				
-				while (true)
-				{
-					var targetableHexes = RangeHelper.GetHexesInRange(origin, range, false, true)
-					.Where(h => 
-						h.GetHexObjectsOfType<Prism>().Any(p => !usedPrisms.Contains(p)) || 
-						h.GetHexObjectsOfType<Figure>().Any(f => f.AlliedWith(state.Performer)) &&
-						(usedPrisms.Count == 0 || IsStraightLine(origin, h)))
-					.ToList();
-
-					if (!targetableHexes.Any())
-					{
-						break;
-					}
-
-					Hex selectedHex = await AbilityCmd.SelectHex(state, list =>
-					{
-						foreach (Hex hex in targetableHexes)
-						{
-							list.Add(hex);
-						}
-					}, false, "Select a prism or target:");
-
-					if (selectedHex == null)
-					{
-						break;
-					}
-
-					if (selectedHex.HasHexObjectOfType<Prism>())
-					{
-						usedPrisms.Add(selectedHex.GetHexObjectOfType<Prism>());
-						origin = selectedHex;
-						continue;
-					}
-					
-					Figure target = selectedHex.GetHexObjectsOfType<Figure>()
-						.FirstOrDefault(f => f.AlliedWith(state.Performer));
-
-					if (target != null)
-					{
-						targets.Add(target);
-					}
-					state.SetCustomValue(this, "RefractedPrisms", usedPrisms);
-					break;
-				}
-			}
-			state.SetCustomValue(this, "CustomHealTargets", targets);
-		};
-	}
-
-	public Action<HealAbility.State, List<Figure>> CustomRefractionHealTargets()
-	{
-		return (state, list) =>
-		{
-			var targets = state.GetCustomValue<List<Figure>>(this, "CustomHealTargets");
-			if (targets != null)
-			{
-				foreach (Figure target in targets)
-				{
-					list.Add(target);
-				}
-			}
-		};
-	}
-
-	// public bool DidRefract(AbilityState state, int abilityIndex = 0)
-	// {
-	// 	return state.GetCustomValue<List<Prism>>(this, $"RefractedPrisms_{abilityIndex}").Count() > 0;
-	// }
-
 	public bool DidRefract(AbilityState abilityState, int index = 0)
 	{
 		return RefractingAttackAbility.RefractionState.DidRefract(abilityState, index);
@@ -142,5 +48,20 @@ public abstract class RefractorCardSide : AbilityCardSideModel<Refractor>
 	public List<Prism> GetUsedPrisms(AbilityState abilityState, int index = 0)
 	{
 		return RefractingAttackAbility.RefractionState.GetUsedPrisms(abilityState, index);
+	}
+
+	public bool DidHealRefract(AbilityState abilityState, int index = 0)
+	{
+		return RefractingHealAbility.RefractionState.DidRefract(abilityState, index);
+	}
+
+	public int HealRefractCount(AbilityState abilityState, int index = 0)
+	{
+		return RefractingHealAbility.RefractionState.RefractCount(abilityState, index);
+	}
+
+	public List<Prism> GetUsedPrismsForHeal(AbilityState abilityState, int index = 0)
+	{
+		return RefractingHealAbility.RefractionState.GetUsedPrisms(abilityState, index);
 	}
 }
