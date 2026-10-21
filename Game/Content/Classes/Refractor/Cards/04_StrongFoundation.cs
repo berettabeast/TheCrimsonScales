@@ -18,7 +18,7 @@ public class StrongFoundation : RefractorCardModel<StrongFoundation.CardTop, Str
 				.WithRange(2)
 				.Build()),
 
-			new AbilityCardAbility(AttackAbility.Builder()
+			new AbilityCardAbility(RefractingAttackAbility.Builder()
 				.WithDamage(2)
 				.WithRange(2)
 				.WithOnAbilityEndedPerformed(async state => await AbilityCmd.GainXP(state.Performer, 1))

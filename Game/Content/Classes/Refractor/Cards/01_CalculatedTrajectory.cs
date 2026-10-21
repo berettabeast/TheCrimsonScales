@@ -16,12 +16,12 @@ public class CalculatedTrajectory : RefractorCardModel<CalculatedTrajectory.Card
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(AttackAbility.Builder()
+			new AbilityCardAbility(RefractingAttackAbility.Builder()
 				.WithDamage(3)
 				.WithRange(2)
 				.WithAfterTargetConfirmedSubscription(
 					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
-						parameters => GetRefractedPrisms(parameters.AbilityState).Count() >= 2,
+						parameters => RefractCount(parameters.AbilityState) >= 2,
 						async parameters =>
 						{
 							parameters.AbilityState.SingleTargetAddCondition(Conditions.Stun);
@@ -38,12 +38,12 @@ public class CalculatedTrajectory : RefractorCardModel<CalculatedTrajectory.Card
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(AttackAbility.Builder()
+			new AbilityCardAbility(RefractingAttackAbility.Builder()
 			.WithDamage(1)
 			.WithRange(2)
 			.WithAfterTargetConfirmedSubscription(
 				ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
-					parameters => GetRefractedPrisms(parameters.AbilityState).Count() >= 2,
+					parameters => RefractCount(parameters.AbilityState) >= 2,
 					async parameters =>
 					{
 						parameters.AbilityState.SingleTargetAdjustAttackValue(2);

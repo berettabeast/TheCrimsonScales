@@ -14,7 +14,7 @@ public class PrismaticLance : RefractorCardModel<PrismaticLance.CardTop, Prismat
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(AttackAbility.Builder()
+			new AbilityCardAbility(RefractingAttackAbility.Builder()
 				.WithDamage(3)
 				.WithRange(2)
 				.WithDuringAttackSubscription(
@@ -31,7 +31,7 @@ public class PrismaticLance : RefractorCardModel<PrismaticLance.CardTop, Prismat
 						}))
 				.WithAfterTargetConfirmedSubscription(
 					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
-						parameters => GetRefractedPrisms(parameters.AbilityState).Any(),
+						parameters => DidRefract(parameters.AbilityState),
 						async parameters =>
 						{
 							await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer);

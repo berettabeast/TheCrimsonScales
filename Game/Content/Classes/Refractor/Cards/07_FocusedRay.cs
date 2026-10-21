@@ -16,7 +16,7 @@ public class FocusedRay : RefractorCardModel<FocusedRay.CardTop, FocusedRay.Card
 		int _range = 2;
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(AttackAbility.Builder()
+			new AbilityCardAbility(RefractingAttackAbility.Builder()
 				.WithDamage(3)
 				.WithRange(2)
 				.WithPierce(2)
@@ -31,7 +31,7 @@ public class FocusedRay : RefractorCardModel<FocusedRay.CardTop, FocusedRay.Card
 				)
 				.WithAfterTargetConfirmedSubscription(
 					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
-						parameters => GetRefractedPrisms(parameters.AbilityState).Any(),
+						parameters => DidRefract(parameters.AbilityState),
 						async parameters =>
 						{
 							await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer);
@@ -52,7 +52,7 @@ public class FocusedRay : RefractorCardModel<FocusedRay.CardTop, FocusedRay.Card
 						async parameters =>
 						{
 							parameters.AbilityState.SingleTargetAdjustRange(2);
-							if (GetRefractedPrisms(parameters.AbilityState).Any())
+							if (DidRefract(parameters.AbilityState))
 							{
 								parameters.AbilityState.SingleTargetAdjustAttackValue(1);
 								await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer);

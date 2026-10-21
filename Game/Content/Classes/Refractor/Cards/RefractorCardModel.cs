@@ -129,22 +129,18 @@ public abstract class RefractorCardSide : AbilityCardSideModel<Refractor>
 	// 	return state.GetCustomValue<List<Prism>>(this, $"RefractedPrisms_{abilityIndex}").Count() > 0;
 	// }
 
-	public bool DidAnyAttackRefract(AttackAbility.State state)
+	public bool DidRefract(AbilityState abilityState, int index = 0)
 	{
-		bool anyRefracted = false;
-
-		for (int i = 0; i < state.UniqueTargetedFigures.Count(); i++)
-		{
-			if (state.GetCustomValue<List<Prism>>(this, $"RefractedPrisms_{i}").Any())
-			{
-				anyRefracted = true;
-			}
-		}
-		return anyRefracted;
+		return RefractingAttackAbility.RefractionState.DidRefract(abilityState, index);
 	}
 
-	public List<Prism> GetRefractedPrisms(AbilityState state, int abilityIndex = 0)
+	public int RefractCount(AbilityState abilityState, int index = 0)
 	{
-		return state.GetCustomValue<List<Prism>>(this, $"RefractedPrisms_{abilityIndex}");
+		return RefractingAttackAbility.RefractionState.RefractCount(abilityState, index);
+	}
+
+	public List<Prism> GetUsedPrisms(AbilityState abilityState, int index = 0)
+	{
+		return RefractingAttackAbility.RefractionState.GetUsedPrisms(abilityState, index);
 	}
 }

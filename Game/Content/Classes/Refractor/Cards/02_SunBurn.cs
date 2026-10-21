@@ -17,7 +17,7 @@ public class SunBurn : RefractorCardModel<SunBurn.CardTop, SunBurn.CardBottom>
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(AttackAbility.Builder()
+			new AbilityCardAbility(RefractingAttackAbility.Builder()
 				.WithDamage(2)
 				.WithRange(2)
 				.WithAfterTargetConfirmedSubscription(
@@ -25,12 +25,10 @@ public class SunBurn : RefractorCardModel<SunBurn.CardTop, SunBurn.CardBottom>
 						_ => true,
 						async parameters =>
 						{
-							if (GetRefractedPrisms(parameters.AbilityState) != null)
+							if (GetUsedPrisms(parameters.AbilityState) != null)
 							{
-								int timesRefracted = GetRefractedPrisms(parameters.AbilityState).Count();
-
-								parameters.AbilityState.SingleTargetAdjustAttackValue(2 * timesRefracted);
-								await AbilityCmd.GainXP(parameters.Performer, timesRefracted);
+								parameters.AbilityState.SingleTargetAdjustAttackValue(2 * RefractCount(parameters.AbilityState));
+								await AbilityCmd.GainXP(parameters.Performer, RefractCount(parameters.AbilityState));
 							}
 						}
 					)
@@ -53,13 +51,14 @@ public class SunBurn : RefractorCardModel<SunBurn.CardTop, SunBurn.CardBottom>
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
-			new AbilityCardAbility(AttackAbility.Builder()
+			new AbilityCardAbility(RefractingAttackAbility.Builder()
 				.WithDamage(1)
 				.WithRange(2)
 				.WithTargets(2)
 				.WithDuringAttackSubscription(
 					ScenarioEvents.DuringAttack.Subscription.New(
-						parameters => GetRefractedPrisms(parameters.AbilityState).Any(),
+						//todo: look into this
+						parameters => DidRefract(parameters.AbilityState),
 						async parameters =>
 						{
 							parameters.AbilityState.SingleTargetAddCondition(Conditions.Wound1);

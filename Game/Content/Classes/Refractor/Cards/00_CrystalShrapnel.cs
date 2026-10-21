@@ -21,7 +21,7 @@ public class CrystalShrapnel : RefractorCardModel<CrystalShrapnel.CardTop, Cryst
 				.WithRange(2)
 				.WithAfterTargetConfirmedSubscription(
 					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
-						parameters => RefractingAttackAbility.RefractionState.DidRefract(parameters.AbilityState),
+						parameters => DidRefract(parameters.AbilityState),
 						async parameters => await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer))
 				)
 				.Build()),
@@ -30,7 +30,7 @@ public class CrystalShrapnel : RefractorCardModel<CrystalShrapnel.CardTop, Cryst
 				.WithPerformAbility(async state =>
 				{
 					var attackAbilityState = state.ActionState.GetAbilityState<AttackAbility.State>(0);
-					var prisms = RefractingAttackAbility.RefractionState.GetUsedPrisms(attackAbilityState);
+					var prisms = GetUsedPrisms(attackAbilityState);
 
 					if (await AbilityCmd.TryDestroyObstacle(prisms.Last()))
 					{
@@ -45,7 +45,7 @@ public class CrystalShrapnel : RefractorCardModel<CrystalShrapnel.CardTop, Cryst
 				.WithConditionalAbilityCheck(async state =>
 				{
 					var attackAbilityState = state.ActionState.GetAbilityState<AttackAbility.State>(0);
-					if (RefractingAttackAbility.RefractionState.DidRefract(attackAbilityState))
+					if (DidRefract(attackAbilityState))
 					{
 						ConfirmPrompt.Answer confirmAnswer =
 						await PromptManager.Prompt(new ConfirmPrompt(null, () => "Destroy prism to wound?"), state.Authority);
