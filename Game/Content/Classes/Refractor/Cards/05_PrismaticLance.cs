@@ -17,18 +17,18 @@ public class PrismaticLance : RefractorCardModel<PrismaticLance.CardTop, Prismat
 			new AbilityCardAbility(RefractingAttackAbility.Builder()
 				.WithDamage(3)
 				.WithRange(2)
-				.WithDuringAttackSubscription(
-					ScenarioEvents.DuringAttack.Subscription.ConsumeElement(Element.Light,
-						_ => true,
-						async parameters =>
-						{
-							parameters.AbilityState.AbilitySetAOEPattern(new AOEPattern([
+				.WithOnAbilityStarted(async state =>
+				{
+					if (await AbilityCmd.AskConsumeElement(state.Authority, Element.Light, false))
+					{
+						state.AbilitySetAOEPattern(new AOEPattern([
 								new AOEHex(Vector2I.Zero, AOEHexType.Red), 
 								new AOEHex(Vector2I.Zero.Add(Direction.NorthEast), AOEHexType.Red)
 								]));
 
-							await AbilityCmd.GainXP(parameters.Performer, 1);
-						}))
+							await AbilityCmd.GainXP(state.Performer, 1);
+					}
+				})
 				.WithAfterTargetConfirmedSubscription(
 					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
 						parameters => DidRefract(parameters.AbilityState),
