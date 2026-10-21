@@ -28,6 +28,8 @@ public abstract class RefractorCardModel<TTop, TBottom> : AbilityCardModel<TTop,
 
 public abstract class RefractorCardSide : AbilityCardSideModel<Refractor>
 {
+	public Prism LastUsedPrism = null;
+
 	public static CreateObstacleAbility.CreateObstacleBuilder CreatePrismObstacleBuilder()
 	{
 		return CreateObstacleAbility.Builder()
@@ -63,5 +65,27 @@ public abstract class RefractorCardSide : AbilityCardSideModel<Refractor>
 	public List<Prism> GetUsedPrismsForHeal(AbilityState abilityState, int index = 0)
 	{
 		return RefractingHealAbility.RefractionState.GetUsedPrisms(abilityState, index);
+	}
+
+	public void SetLastUsedPrism(AbilityState abilityState, int index = 0)
+	{
+		LastUsedPrism = GetUsedPrisms(abilityState, index).Last();
+	}
+
+	public Prism GetLastUsedPrism()
+	{
+		return LastUsedPrism;
+	}
+
+	public bool IsStraightLine(Hex from, Hex to)
+	{
+		if (from == to)
+			return true;
+
+		int dq = to.Coords.X - from.Coords.X;
+		int dr = to.Coords.Y - from.Coords.Y;
+
+		int ds = -dq - dr;
+		return dq == 0 || dr == 0 || ds == 0;
 	}
 }

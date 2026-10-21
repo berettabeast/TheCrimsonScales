@@ -21,33 +21,39 @@ public class CalculatedTrajectory : RefractorCardModel<CalculatedTrajectory.Card
 				.WithRange(2)
 				.WithAfterTargetConfirmedSubscription(
 					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
-						parameters => RefractCount(parameters.AbilityState) >= 2,
+						parameters => DidRefract(parameters.AbilityState),
 						async parameters =>
 						{
-							parameters.AbilityState.SingleTargetAddCondition(Conditions.Stun);
-							await AbilityCmd.GainXP(parameters.Performer, 1);
+							await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer);
+
+							if (RefractCount(parameters.AbilityState) > 1)
+							{
+								parameters.AbilityState.SingleTargetAddCondition(Conditions.Stun);
+								await AbilityCmd.GainXP(parameters.Performer, 1);
+							}
 						}
 					)
 				).Build())
 		];
-
-		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Light)];
 	}
 
 	public class CardBottom : RefractorCardSide
 	{
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
+			new AbilityCardAbility(CreatePrismObstacleBuilder()
+			.WithRange(2)
+			.Build()),
+
 			new AbilityCardAbility(RefractingAttackAbility.Builder()
 			.WithDamage(1)
 			.WithRange(2)
-			.WithAfterTargetConfirmedSubscription(
-				ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
-					parameters => RefractCount(parameters.AbilityState) >= 2,
+			.WithDuringAttackSubscription(
+				ScenarioEvents.DuringAttack.Subscription.ConsumeElement(Element.Light,
+					parameters => DidRefract(parameters.AbilityState),
 					async parameters =>
 					{
 						parameters.AbilityState.SingleTargetAdjustAttackValue(2);
-						await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer);
 					}
 				)
 			)

@@ -22,10 +22,31 @@ public class CrystallineGrowth : RefractorCardModel<CrystallineGrowth.CardTop, C
 						async parameters =>
 						{
 							parameters.AbilityState.AdjustTargets(1);
-
 							await GDTask.CompletedTask;
 						}, effectInfoViewParameters: new TextEffectInfoView.Parameters($"+1{Icons.Inline(Icons.Targets)}"))
 				)
+				.WithAfterTargetConfirmedSubscription(
+					ScenarioEvents.AttackAfterTargetConfirmed.Subscription.New(
+						parameters => DidRefract(parameters.AbilityState),
+						async parameters =>
+						{
+							SetLastUsedPrism(parameters.AbilityState);
+						}
+					)
+				)
+				.Build()),
+
+				new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
+				{
+					var prism = GetLastUsedPrism();
+
+					if (await AbilityCmd.TryDestroyObstacle(prism))
+					{						
+						await AbilityCmd.InfuseElement(state, Element.Light, state.Performer);
+					}
+				})
+				.WithConditionalAbilityCheck(async state => GetLastUsedPrism() != null)
 				.Build())
 		];
 	}

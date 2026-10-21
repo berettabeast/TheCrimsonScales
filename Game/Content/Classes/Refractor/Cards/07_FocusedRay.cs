@@ -13,7 +13,6 @@ public class FocusedRay : RefractorCardModel<FocusedRay.CardTop, FocusedRay.Card
 
 	public class CardTop : RefractorCardSide
 	{
-		int _range = 2;
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
 			new AbilityCardAbility(RefractingAttackAbility.Builder()
@@ -34,10 +33,23 @@ public class FocusedRay : RefractorCardModel<FocusedRay.CardTop, FocusedRay.Card
 						parameters => DidRefract(parameters.AbilityState),
 						async parameters =>
 						{
-							await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer);
+							SetLastUsedPrism(parameters.AbilityState);
 						}
 					)
-				).Build())
+				).Build()),
+
+				new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
+				{
+					var prism = GetLastUsedPrism();
+
+					if (await AbilityCmd.TryDestroyObstacle(prism))
+					{						
+						await AbilityCmd.InfuseElement(state, Element.Light, state.Performer);
+					}
+				})
+				.WithConditionalAbilityCheck(async state => GetLastUsedPrism() != null)
+				.Build())
 		];
 	}
 

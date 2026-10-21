@@ -34,10 +34,24 @@ public class PrismaticLance : RefractorCardModel<PrismaticLance.CardTop, Prismat
 						parameters => DidRefract(parameters.AbilityState),
 						async parameters =>
 						{
+							SetLastUsedPrism(parameters.AbilityState);
 							await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer);
 						}
 					)
 				)
+				.Build()),
+
+				new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
+				{
+					var prism = GetLastUsedPrism();
+
+					if (await AbilityCmd.TryDestroyObstacle(prism))
+					{						
+						await AbilityCmd.InfuseElement(state, Element.Light, state.Performer);
+					}
+				})
+				.WithConditionalAbilityCheck(async state => GetLastUsedPrism() != null)
 				.Build())
 		];
 	}
@@ -48,6 +62,18 @@ public class PrismaticLance : RefractorCardModel<PrismaticLance.CardTop, Prismat
 		[
 			new AbilityCardAbility(MoveAbility.Builder()
 				.WithDistance(4)
+				.WithOnAbilityStarted(async state =>
+				{
+					state.SetCustomValue(this, "StartingHex", state.Performer.Hex);
+					await GDTask.CompletedTask;
+				})
+				.WithOnAbilityEnded(async state =>
+				{
+					if (IsStraightLine(state.GetCustomValue<Hex>(this, "StartingHex"), state.Performer.Hex))
+					{
+						await AbilityCmd.InfuseElement(state, Element.Light, state.Performer);
+					}
+				})
 				.Build())
 		];
 	}

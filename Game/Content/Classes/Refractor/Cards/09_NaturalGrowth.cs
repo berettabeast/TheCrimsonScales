@@ -16,7 +16,9 @@ public class NaturalGrowth : RefractorCardModel<NaturalGrowth.CardTop, NaturalGr
 			new AbilityCardAbility(ConditionAbility.Builder()
 				.WithConditions(Conditions.Regenerate)
 				.WithTarget(Target.Self)
-				.Build())
+				.Build()),
+
+			new AbilityCardAbility(CreatePrismObstacleBuilder().WithRange(2).Build())
 		];
 		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Light), CardElementInfusion.Infuse(Element.Earth)];
 	}
@@ -31,7 +33,6 @@ public class NaturalGrowth : RefractorCardModel<NaturalGrowth.CardTop, NaturalGr
 
 			new AbilityCardAbility(CreatePrismObstacleBuilder()
 				.WithRange(2)
-				.WithConditionalAbilityCheck(async state => await AbilityCmd.AskConsumeElement(state.Authority, Element.Earth))
 				.Build())
 		];
 		public override IEnumerable<CardElementInfusion> Elements => [CardElementInfusion.Infuse(Element.Earth)];

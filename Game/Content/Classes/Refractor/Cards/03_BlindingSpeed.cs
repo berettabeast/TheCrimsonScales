@@ -12,6 +12,7 @@ public class BlindingSpeed : RefractorCardModel<BlindingSpeed.CardTop, BlindingS
 
 	public class CardTop : RefractorCardSide
 	{
+		private Prism _prism = null;
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
 			new AbilityCardAbility(RefractingAttackAbility.Builder()
@@ -31,10 +32,24 @@ public class BlindingSpeed : RefractorCardModel<BlindingSpeed.CardTop, BlindingS
 						parameters => DidRefract(parameters.AbilityState),
 						async parameters =>
 						{
+							SetLastUsedPrism(parameters.AbilityState);
 							await AbilityCmd.InfuseElement(parameters.AbilityState, Element.Light, parameters.Performer);
 						}
 					)
 				)
+				.Build()),
+
+				new AbilityCardAbility(OtherAbility.Builder()
+				.WithPerformAbility(async state =>
+				{
+					var prism = GetLastUsedPrism();
+
+					if (await AbilityCmd.TryDestroyObstacle(prism))
+					{						
+						await AbilityCmd.InfuseElement(state, Element.Light, state.Performer);
+					}
+				})
+				.WithConditionalAbilityCheck(async state => GetLastUsedPrism() != null)
 				.Build())
 		];
 	}
