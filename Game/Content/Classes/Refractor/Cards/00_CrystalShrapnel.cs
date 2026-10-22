@@ -68,7 +68,7 @@ public class CrystalShrapnel : RefractorCardModel<CrystalShrapnel.CardTop, Cryst
 			.WithMoveType(MoveType.Jump)
 			.WithOnAbilityStarted(async state =>
 			{
-				ScenarioEvents.FigureExitingHexEvent.Subscribe(state.Performer, this,
+				ScenarioEvents.FigureExitingHex.Subscription.New(
 					parameters => parameters.PotentialAbilityState == state,
 					async parameters =>
 					{
