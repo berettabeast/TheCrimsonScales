@@ -12,19 +12,17 @@ public class BlindingSpeed : RefractorCardModel<BlindingSpeed.CardTop, BlindingS
 
 	public class CardTop : RefractorCardSide
 	{
-		private Prism _prism = null;
 		protected override List<AbilityCardAbility> GetAbilities() =>
 		[
 			new AbilityCardAbility(RefractingAttackAbility.Builder()
 				.WithDamage(4)
-				.WithDamage(2)
+				.WithRange(2)
 				.WithDuringAttackSubscription(
 					ScenarioEvents.DuringAttack.Subscription.ConsumeElement(Element.Light,
 						_ => true,
 						async parameters =>
 						{
-							// add blind
-							parameters.AbilityState.SingleTargetAddCondition(Conditions.Immobilize);
+							parameters.AbilityState.SingleTargetAddCondition(Conditions.Blind);
 						})
 				)
 				.WithAfterTargetConfirmedSubscription(
